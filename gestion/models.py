@@ -99,6 +99,8 @@ class Becario(models.Model):
 class PrelacionBecario(models.Model):
 
     class Meta:
+        # Un becario solo puede indicar su preferencia para una plaza una sola vez
+        # Un becario solo puede indicar un orden de prelacion para cada plaza
         unique_together = (('becario', 'plaza'), ('becario', 'num_orden'))
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
@@ -106,3 +108,16 @@ class PrelacionBecario(models.Model):
 
     def __unicode__(self):
         return unicode(self.becario) + '(' + unicode(self.num_orden) + ') - ' + unicode(self.plaza)
+
+
+class PlanFormacion(models.Model):
+
+    class Meta:
+        # El mismo curso no puede impartirse dos veces el mismo día a la misma hora
+        unique_together = (('nombre_curso', 'fecha_imparticion'))
+    nombre_curso = models.CharField(max_length=200)
+    lugar_imparticion = models.CharField(max_length=200)
+    fecha_imparticion = models.DateTimeField()
+
+    def __unicode__(self):
+        return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
