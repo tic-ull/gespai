@@ -16,7 +16,31 @@ def dni_validator(dni):
         params={'value': dni},
     )
 
-class User(models.Model):
+def telefono_validator(telefono):
+    if len(str(telefono)) != 9:
+        raise ValidationError(
+            _('Introduzca un número de teléfono válido'),
+            params={'value': telefono},
+        )
+
+class Centro(models.Model):
+    nombre = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.nombre
+
+class Plaza(models.Model):
+    HORARIOS = (
+        ('M', 'Mañana'),
+        ('T', 'Tarde'),
+    )
+    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+    horario = models.CharField(max_length=1, choices=HORARIOS)
+
+    def __str__(self):
+        return "Plaza #" + str(self.pk) + " - " + self.get_horario_display()
+
+class Becario(models.Model):
     regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
     ESTADOS = (
         ('A', 'Asignado'),
@@ -38,13 +62,13 @@ class User(models.Model):
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.CharField(max_length=500)
-    centro_asignado = models.ForeignKey(Centro, on_delete=models.SET_NULL,
+    plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
                                         blank=True, null=True)
     horario_asignado = models.CharField(max_length=1, choices=HORARIOS,
                                         default="N")
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
-        validators=[telefono_validator], blank=True)
+        validators=[telefono_validator], blank=True, null=True)
 
     # para redirigir al crear o editar un usuario en un form
     def get_absolute_url(self):
