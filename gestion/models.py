@@ -113,7 +113,8 @@ class PrelacionBecario(models.Model):
 class PlanFormacion(models.Model):
 
     class Meta:
-        # El mismo curso no puede impartirse dos veces el mismo día a la misma hora
+        # El mismo curso no puede impartirse dos veces el mismo día a la misma
+        # hora
         unique_together = (('nombre_curso', 'fecha_imparticion'))
     nombre_curso = models.CharField(max_length=200)
     lugar_imparticion = models.CharField(max_length=200)
@@ -121,3 +122,16 @@ class PlanFormacion(models.Model):
 
     def __unicode__(self):
         return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+
+
+class AsistenciaFormacion(models.Model):
+    class Meta:
+        unique_together = (('becario', 'curso'))
+    becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
+    curso = models.ForeignKey(PlanFormacion, on_delete=models.CASCADE)
+    calificacion = models.DecimalField(
+        max_digits=4, decimal_places=2, null=True, blank=True, default=None,
+        validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
+
+    def __unicode__(self):
+        return unicode(self.becario) + ' - ' + unicode(self.curso)
