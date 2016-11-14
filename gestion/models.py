@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 from __future__ import unicode_literals
 
 from django.db import models
@@ -6,6 +6,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 
 # Create your models here.
+
 
 def dni_validator(dni):
     if len(dni) == 8:
@@ -16,6 +17,7 @@ def dni_validator(dni):
         params={'value': dni},
     )
 
+
 def telefono_validator(telefono):
     if len(str(telefono)) != 9:
         raise ValidationError(
@@ -23,11 +25,13 @@ def telefono_validator(telefono):
             params={'value': telefono},
         )
 
+
 class Centro(models.Model):
     nombre = models.CharField(max_length=200)
 
     def __str__(self):
         return self.nombre
+
 
 class Plaza(models.Model):
     HORARIOS = (
@@ -42,6 +46,7 @@ class Plaza(models.Model):
 
     def __unicode__(self):
         return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
+
 
 class Becario(models.Model):
     regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
@@ -66,7 +71,7 @@ class Becario(models.Model):
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.CharField(max_length=500)
     plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
-                                        blank=True, null=True)
+                                       blank=True, null=True)
     horario_asignado = models.CharField(max_length=1, choices=HORARIOS,
                                         default="N")
     email = models.EmailField(unique=True)
@@ -90,9 +95,14 @@ class Becario(models.Model):
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
 
+
 class PrelacionBecario(models.Model):
+
     class Meta:
-        unique_together = (('becario', 'plaza'))
+        unique_together = (('becario', 'plaza'), ('becario', 'num_orden'))
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
     num_orden = models.PositiveSmallIntegerField()
+
+    def __unicode__(self):
+        return unicode(self.becario) + '(' + unicode(self.num_orden) + ') - ' + unicode(self.plaza)
