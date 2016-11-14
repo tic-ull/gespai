@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 # Create your models here.
 
+nombre_regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
 
 def dni_validator(dni):
     if len(dni) == 8:
@@ -49,7 +50,6 @@ class Plaza(models.Model):
 
 
 class Becario(models.Model):
-    regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
     ESTADOS = (
         ('A', 'Asignado'),
         ('S', 'Suplente'),
@@ -63,7 +63,7 @@ class Becario(models.Model):
         ('N', 'No asignado'),
     )
     nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(regex)])
+                              validators=[validators.RegexValidator(nombre_regex)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
     dni = models.CharField(primary_key=True, validators=[dni_validator],
@@ -125,6 +125,7 @@ class PlanFormacion(models.Model):
 
 
 class AsistenciaFormacion(models.Model):
+
     class Meta:
         unique_together = (('becario', 'curso'))
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
@@ -135,3 +136,23 @@ class AsistenciaFormacion(models.Model):
 
     def __unicode__(self):
         return unicode(self.becario) + ' - ' + unicode(self.curso)
+
+class ResponsableAula(models.Model):
+    nombre = models.CharField(max_length=200,
+                              validators=[validators.RegexValidator(nombre_regex)])
+    apellido1 = models.CharField(max_length=200)
+    apellido2 = models.CharField(max_length=200, blank=True)
+    dni = models.CharField(primary_key=True, validators=[dni_validator],
+                           max_length=8)
+    email = models.EmailField(unique=True)
+    telefono = models.PositiveIntegerField(
+        validators=[telefono_validator], blank=True, null=True)
+    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        context = {
+            'nombre': self.nombre,
+            'apellido1': self.apellido1,
+            'apellido2': self.apellido2,
+        }
+        return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
