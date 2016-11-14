@@ -40,6 +40,9 @@ class Plaza(models.Model):
     def __str__(self):
         return "Plaza #" + str(self.pk) + " - " + self.get_horario_display()
 
+    def __unicode__(self):
+        return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
+
 class Becario(models.Model):
     regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
     ESTADOS = (
@@ -86,3 +89,10 @@ class Becario(models.Model):
             'apellido2': self.apellido2,
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+
+class PrelacionBecario(models.Model):
+    class Meta:
+        unique_together = (('becario', 'plaza'))
+    becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
+    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
+    num_orden = models.PositiveSmallIntegerField()

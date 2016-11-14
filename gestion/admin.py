@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Becario, Plaza, Centro
+from .models import Becario, Plaza, Centro, PrelacionBecario
 
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
@@ -27,3 +27,4 @@ class CentroAdmin(admin.ModelAdmin):
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Centro, CentroAdmin)
+admin.site.register(PrelacionBecario)
