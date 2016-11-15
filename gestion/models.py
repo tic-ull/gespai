@@ -71,7 +71,7 @@ class Becario(models.Model):
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.CharField(max_length=500)
-    plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
+    plaza_asignada = models.OneToOneField(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True)
     horario_asignado = models.CharField(max_length=1, choices=HORARIOS,
                                         default="N")
