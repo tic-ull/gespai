@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
+import datetime
 
 from django.db import models
 from django.core import validators
@@ -77,6 +78,7 @@ class Becario(models.Model):
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
+    permisos = models.BooleanField(default=False)
 
     # para redirigir al crear o editar un usuario en un form
     def get_absolute_url(self):
@@ -173,4 +175,18 @@ class CambiosPendientes(models.Model):
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
 
     def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio)
+        return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
+
+class HistorialBecarios(models.Model):
+    class Meta:
+        unique_together = (('dni_becario', 'anyo'))
+    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 1)]
+    # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
+    # se perdería información en la tabla HistorialBecarios, la cual debe persistir
+    dni_becario = models.CharField(validators=[dni_validator],max_length=8)
+    anyo = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    fecha_asignacion = models.DateField(auto_now_add=True)
+    fecha_renuncia = models.DateField(null=True)
+
+    def __unicode__(self):
+        return unicode(self.becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
