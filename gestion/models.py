@@ -156,3 +156,21 @@ class ResponsableAula(models.Model):
             'apellido2': self.apellido2,
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+
+class CambiosPendientes(models.Model):
+    class Meta:
+        # No puede haber dos cambios pendientes para el mismo becario en la
+        # misma plaza para el mismo día.
+        unique_together = (('becario', 'plaza', 'fecha_cambio'))
+    ESTADOS = (
+        ('A', 'Asignado'),
+        ('R', 'Renuncia'),
+        ('T', 'Traslado'),
+    )
+    becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
+    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
+    fecha_cambio = models.DateField()
+    estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
+
+    def __unicode__(self):
+        return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio)
