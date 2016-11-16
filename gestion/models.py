@@ -89,10 +89,14 @@ class Becario(models.Model):
             if prev.plaza_asignada == None and self.plaza_asignada != None:
                 print('se asigna plaza a ' + unicode(self))
                 self.estado = 'A'
+                HistorialBecarios.objects.get_or_create(dni_becario=self.dni)
             # Si el becario pasa de tener una plaza a no tener una
             elif prev.plaza_asignada != None and self.plaza_asignada == None:
                 print('se le quita la plaza a ' + unicode(self))
-                self.estado = 'N'
+                self.estado = 'R'
+                hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+                hist.fecha_renuncia=datetime.datetime.now()
+                hist.save()
         super(Becario, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -194,4 +198,4 @@ class HistorialBecarios(models.Model):
     fecha_renuncia = models.DateField(null=True)
 
     def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
+        return unicode(self.dni_becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
