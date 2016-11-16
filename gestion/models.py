@@ -5,6 +5,7 @@ import datetime
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save, post_init
 
 # Create your models here.
 
@@ -80,14 +81,19 @@ class Becario(models.Model):
         validators=[telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
 
-    # para redirigir al crear o editar un usuario en un form
-    def get_absolute_url(self):
-        return reverse('users:detail', kwargs={'pk': self.pk})
-
-    '''
-    def __str__(self):
-        return self.nombre + ' ' + self.apellido1 + ' ' + self.apellido2
-    '''
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            # Si el objeto ya existe, guardo sus valores
+            prev = Becario.objects.get(pk=self.pk)
+            # Si el becario pasa de no tener plaza a tener una
+            if prev.plaza_asignada == None and self.plaza_asignada != None:
+                print('se asigna plaza a ' + unicode(self))
+                self.estado = 'A'
+            # Si el becario pasa de tener una plaza a no tener una
+            elif prev.plaza_asignada != None and self.plaza_asignada == None:
+                print('se le quita la plaza a ' + unicode(self))
+                self.estado = 'N'
+        super(Becario, self).save(*args, **kwargs)
 
     def __unicode__(self):
         context = {
@@ -96,7 +102,6 @@ class Becario(models.Model):
             'apellido2': self.apellido2,
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
-
 
 class PrelacionBecario(models.Model):
 
