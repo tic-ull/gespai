@@ -34,7 +34,7 @@ class CambiosPendientesAdmin(admin.ModelAdmin):
     list_display = ('becario', 'plaza', 'fecha_cambio', 'estado_cambio')
 
 class HistorialBecariosAdmin(admin.ModelAdmin):
-    list_display = ('dni_becario', 'fecha_asignacion', 'fecha_renuncia')
+    list_display = ('dni_becario', 'anyo', 'fecha_asignacion', 'fecha_renuncia')
 
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)

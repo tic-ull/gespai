@@ -4,7 +4,7 @@ import datetime
 
 from django.db import models
 from django.core import validators
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.signals import post_save, post_init
 
 # Create your models here.
@@ -81,6 +81,11 @@ class Becario(models.Model):
         validators=[telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
 
+    def clean(self):
+        entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni).count()
+        if entradas_historial >= 5:
+            raise ValidationError('Un becario no puede ser asignado más de 5 convocatorias.')
+
     def save(self, *args, **kwargs):
         if self.pk is not None:
             # Si el objeto ya existe, guardo sus valores
@@ -89,14 +94,23 @@ class Becario(models.Model):
             if prev.plaza_asignada == None and self.plaza_asignada != None:
                 print('se asigna plaza a ' + unicode(self))
                 self.estado = 'A'
-                HistorialBecarios.objects.get_or_create(dni_becario=self.dni)
+                # Se crea una entrada en HistorialBecarios para este becario en este año.
+                # Si existe una entrada para este becario en este año no se hace nada.
+                HistorialBecarios.objects.get_or_create(dni_becario=self.dni, anyo=datetime.datetime.now().year)
             # Si el becario pasa de tener una plaza a no tener una
             elif prev.plaza_asignada != None and self.plaza_asignada == None:
                 print('se le quita la plaza a ' + unicode(self))
                 self.estado = 'R'
-                hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
-                hist.fecha_renuncia=datetime.datetime.now()
-                hist.save()
+                try:
+                    hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+                    hist.fecha_renuncia=datetime.datetime.now()
+                    hist.save()
+                except ObjectDoesNotExist:
+                    # En el caso de que se intentase quitar una plaza a un becario
+                    # que no esté en HistorialBecarios no se hace ninguna acción
+                    # en la tabla HistorialBecarios
+                    print('No existe entrada para el becario: ' + unicode(self) + ' en HistorialBecarios')
+
         super(Becario, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -196,6 +210,15 @@ class HistorialBecarios(models.Model):
     anyo = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
     fecha_asignacion = models.DateField(auto_now_add=True)
     fecha_renuncia = models.DateField(null=True)
+
+    def clean(self):
+        entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
+        if entradas_historial >= 5:
+            raise ValidationError('Un becario no puede ser asignado más de 5 convocatorias.')
+
+    def save(self, *args, **kwargs):
+        #self.full_clean()
+        return super(HistorialBecarios, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return unicode(self.dni_becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
