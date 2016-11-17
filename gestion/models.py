@@ -84,7 +84,7 @@ class Becario(models.Model):
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni).count()
         if entradas_historial >= 5:
-            raise ValidationError('Un becario no puede ser asignado más de 5 convocatorias.')
+            raise ValidationError('El becario al que quiere asignar una plaza ya ha recibido beca en 5 convocatorias.')
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
@@ -183,6 +183,7 @@ class ResponsableAula(models.Model):
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
 
 class CambiosPendientes(models.Model):
+
     class Meta:
         # No puede haber dos cambios pendientes para el mismo becario en la
         # misma plaza para el mismo día.
@@ -197,10 +198,17 @@ class CambiosPendientes(models.Model):
     fecha_cambio = models.DateField()
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
 
+    def clean(self):
+        if self.estado_cambio == 'A':
+            entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.becario.dni).count()
+            if entradas_historial >= 5:
+                raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')
+
     def __unicode__(self):
         return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
 
 class HistorialBecarios(models.Model):
+    
     class Meta:
         unique_together = (('dni_becario', 'anyo'))
     ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 1)]
@@ -214,11 +222,7 @@ class HistorialBecarios(models.Model):
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
         if entradas_historial >= 5:
-            raise ValidationError('Un becario no puede ser asignado más de 5 convocatorias.')
-
-    def save(self, *args, **kwargs):
-        #self.full_clean()
-        return super(HistorialBecarios, self).save(*args, **kwargs)
+            raise ValidationError('Este becario ya ha sido asignado en 5 convocatorias.')
 
     def __unicode__(self):
         return unicode(self.dni_becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
