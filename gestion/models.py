@@ -72,8 +72,8 @@ class Becario(models.Model):
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.CharField(max_length=500)
-    plaza_asignada = models.OneToOneField(Plaza, on_delete=models.SET_NULL,
-                                       blank=True, null=True)
+    plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
+                                       blank=True, null=True, unique=True)
     horario_asignado = models.CharField(max_length=1, choices=HORARIOS,
                                         default="N")
     email = models.EmailField(unique=True)
@@ -81,37 +81,42 @@ class Becario(models.Model):
         validators=[telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
 
+    def __init__(self, *args, **kwargs):
+        super(Becario, self).__init__(*args, **kwargs)
+        self.__plaza_previa = self.plaza_asignada
+
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni).count()
         if entradas_historial >= 5:
             raise ValidationError('El becario al que quiere asignar una plaza ya ha recibido beca en 5 convocatorias.')
 
     def save(self, *args, **kwargs):
-        if self.pk is not None:
+        '''if self.pk is not None:
             # Si el objeto ya existe, guardo sus valores
-            prev = Becario.objects.get(pk=self.pk)
-            # Si el becario pasa de no tener plaza a tener una
-            if prev.plaza_asignada == None and self.plaza_asignada != None:
-                print('se asigna plaza a ' + unicode(self))
-                self.estado = 'A'
-                # Se crea una entrada en HistorialBecarios para este becario en este año.
-                # Si existe una entrada para este becario en este año no se hace nada.
-                HistorialBecarios.objects.get_or_create(dni_becario=self.dni, anyo=datetime.datetime.now().year)
-            # Si el becario pasa de tener una plaza a no tener una
-            elif prev.plaza_asignada != None and self.plaza_asignada == None:
-                print('se le quita la plaza a ' + unicode(self))
-                self.estado = 'R'
-                try:
-                    hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
-                    hist.fecha_renuncia=datetime.datetime.now()
-                    hist.save()
-                except ObjectDoesNotExist:
-                    # En el caso de que se intentase quitar una plaza a un becario
-                    # que no esté en HistorialBecarios no se hace ninguna acción
-                    # en la tabla HistorialBecarios
-                    print('No existe entrada para el becario: ' + unicode(self) + ' en HistorialBecarios')
-
+            prev = Becario.objects.get(pk=self.pk)'''
+        print(unicode(self.__plaza_previa) + ' - ' + unicode(self.plaza_asignada))
+        # Si el becario pasa de no tener plaza a tener una
+        if self.__plaza_previa == None and self.plaza_asignada != None:
+            print('se asigna plaza a ' + unicode(self))
+            self.estado = 'A'
+            # Se crea una entrada en HistorialBecarios para este becario en este año.
+            # Si existe una entrada para este becario en este año no se hace nada.
+            HistorialBecarios.objects.get_or_create(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+        # Si el becario pasa de tener una plaza a no tener una
+        elif self.__plaza_previa != None and self.plaza_asignada == None:
+            print('se le quita la plaza a ' + unicode(self))
+            self.estado = 'R'
+            try:
+                hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+                hist.fecha_renuncia=datetime.datetime.now()
+                hist.save()
+            except ObjectDoesNotExist:
+                # En el caso de que se intentase quitar una plaza a un becario
+                # que no esté en HistorialBecarios no se hace ninguna acción
+                # en la tabla HistorialBecarios
+                print('No existe entrada para el becario: ' + unicode(self) + ' en HistorialBecarios')
         super(Becario, self).save(*args, **kwargs)
+        self.__plaza_previa = self.plaza_asignada
 
     def __unicode__(self):
         context = {
@@ -208,7 +213,7 @@ class CambiosPendientes(models.Model):
         return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
 
 class HistorialBecarios(models.Model):
-    
+
     class Meta:
         unique_together = (('dni_becario', 'anyo'))
     ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 1)]
