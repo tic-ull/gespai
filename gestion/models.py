@@ -16,7 +16,7 @@ def dni_validator(dni):
         if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
             return
     raise ValidationError(
-        _('Introduzca un DNI válido'),
+        ('Introduzca un DNI válido'),
         params={'value': dni},
     )
 
@@ -24,7 +24,7 @@ def dni_validator(dni):
 def telefono_validator(telefono):
     if len(str(telefono)) != 9:
         raise ValidationError(
-            _('Introduzca un número de teléfono válido'),
+            ('Introduzca un número de teléfono válido'),
             params={'value': telefono},
         )
 
