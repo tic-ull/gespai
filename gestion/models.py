@@ -59,11 +59,6 @@ class Becario(models.Model):
         ('E', 'Excluido'),
         ('N', 'No asignado')
     )
-    HORARIOS = (
-        ('M', 'Mañana'),
-        ('T', 'Tarde'),
-        ('N', 'No asignado'),
-    )
     nombre = models.CharField(max_length=200,
                               validators=[validators.RegexValidator(nombre_regex)])
     apellido1 = models.CharField(max_length=200)
@@ -74,8 +69,6 @@ class Becario(models.Model):
     titulacion = models.CharField(max_length=500)
     plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True, unique=True)
-    horario_asignado = models.CharField(max_length=1, choices=HORARIOS,
-                                        default="N")
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
