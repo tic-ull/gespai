@@ -32,8 +32,8 @@ def telefono_validator(telefono):
 class Centro(models.Model):
     nombre = models.CharField(max_length=200)
 
-    def __str__(self):
-        return self.nombre
+    def __unicode__(self):
+        return unicode(self.nombre)
 
 
 class Plaza(models.Model):
