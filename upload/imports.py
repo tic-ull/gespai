@@ -27,3 +27,17 @@ def import_csv_becarios(csv_file):
                                 unicode(index + 1) + ": " + unicode(e.error_dict))
     if new_becarios:
         raise ValidationError(new_becarios)
+
+def import_csv_centros_plazas(csv_file):
+    reader = csv.reader(csv_file)
+    errors = []
+
+    for index, row in enumerate(reader):
+        new_centro = models.Centro(nombre=row[2])
+
+        try:
+            new_centro.full_clean()
+            new_centro.save()
+        except ValidationError as e:
+            errors.append("Error en linea " +
+                                unicode(index + 1) + ": " + unicode(e.error_dict))
