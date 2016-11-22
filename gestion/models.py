@@ -50,6 +50,12 @@ class Plaza(models.Model):
     def __unicode__(self):
         return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
 
+class Titulacion(models.Model):
+    codigo = models.CharField(max_length=4, primary_key=True)
+    nombre = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return unicode(self.nombre)
 
 class Becario(models.Model):
     ESTADOS = (
@@ -66,7 +72,7 @@ class Becario(models.Model):
     dni = models.CharField(primary_key=True, validators=[dni_validator],
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
-    titulacion = models.CharField(max_length=500)
+    titulacion = models.ForeignKey(Titulacion, on_delete=models.PROTECT)
     plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True, unique=True)
     email = models.EmailField(unique=True)
