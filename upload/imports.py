@@ -1,6 +1,6 @@
 # coding=utf-8
 import csv
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from gestion import models
 
@@ -39,8 +39,14 @@ def import_csv_centros_plazas(csv_file):
             nombre = row[2]'''
         nombre = find_nombre(reader, index)
         print('nombre magico de línea: ' + str(index) + ': ' + str(nombre))
-        new_centro = models.Centro(nombre=nombre)
-
+        # Se comprueba si existe ya un Centro con el mismo nombre. Si no existe,
+        # se crea. No se utiliza get_or_create ya que es necesario hacer validación
+        # de los campos mediante full_clean.
+        try:
+            new_centro = models.Centro.objects.get(nombre=nombre)
+        except ObjectDoesNotExist:
+            new_centro = models.Centro(nombre=nombre)
+        # sobra? ya compruebo que el nombre no coincida, y Centro solo tiene nombre e id automática
         try:
             new_centro.full_clean()
             new_centro.save()
@@ -59,8 +65,10 @@ def import_csv_centros_plazas(csv_file):
     if errors:
         raise ValidationError(errors)
 
-def find_nombre(rows, index):
-    if not rows[index][2]:
-        find_nombre(rows, index - 1)
+# Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
+# los nombres repetidos aparecen como campos vacíos en el CSV)
+def find_nombre(rows, ind):
+    if rows[ind][2]:
+        return rows[ind][2]
     else:
-        return rows[index][2]
+        return find_nombre(rows, (ind - 1))
