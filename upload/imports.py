@@ -11,14 +11,15 @@ def import_csv_becarios(csv_file):
 
     for index, row in enumerate(reader):
 
-        new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[10])
-        new_titulacion.nombre = row[11].decode('utf-8')
-        try:
-            new_titulacion.full_clean()
-            new_titulacion.save()
-        except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+        if is_codigo_tit(row[10]):
+            new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[10])
+            new_titulacion.nombre = row[11].decode('utf-8')
+            try:
+                new_titulacion.full_clean()
+                new_titulacion.save()
+            except ValidationError as e:
+                errors.append("Error en linea " +
+                              unicode(index + 1) + ": " + unicode(e.error_dict))
 
         new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
                          apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
@@ -74,7 +75,12 @@ def import_csv_centros_plazas(csv_file):
                 becario.save()
             except ObjectDoesNotExist:
                 if is_codigo_tit(row[14]):
-                    new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[14])
+                    try:
+                        new_titulacion = models.Titulacion.objects.get(codigo=row[14])
+                    except ObjectDoesNotExist:
+                        new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
+                        new_titulacion.save()
+                #new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[14])
                 becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
