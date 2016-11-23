@@ -16,7 +16,7 @@ def dni_validator(dni):
         if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
             return
     raise ValidationError(
-        _('Introduzca un DNI válido'),
+        ('Introduzca un DNI válido'),
         params={'value': dni},
     )
 
@@ -24,9 +24,18 @@ def dni_validator(dni):
 def telefono_validator(telefono):
     if len(str(telefono)) != 9:
         raise ValidationError(
-            _('Introduzca un número de teléfono válido'),
+            ('Introduzca un número de teléfono válido'),
             params={'value': telefono},
         )
+
+def codigo_tit_validator(codigo):
+    if len(codigo) == 4:
+        if codigo[0].isalpha and codigo[1:].isdigit():
+            return
+    raise ValidationError(
+        ('Introduzca un codigo de titulacion valido'),
+        params={'value': codigo},
+    )
 
 
 class Centro(models.Model):
@@ -51,7 +60,7 @@ class Plaza(models.Model):
         return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
 
 class Titulacion(models.Model):
-    codigo = models.CharField(max_length=4, primary_key=True)
+    codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
     nombre = models.CharField(max_length=200)
 
     def __unicode__(self):
