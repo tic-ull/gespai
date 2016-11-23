@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 
 from .models import (Becario, Plaza, Centro, PrelacionBecario, PlanFormacion,
-AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios)
+AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
@@ -20,6 +20,7 @@ class PlazaInline(admin.StackedInline):
     extra = 0
 
 class PlazaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'centro', 'horario')
     inlines = [BecarioInline]
 
 class CentroAdmin(admin.ModelAdmin):
@@ -36,6 +37,9 @@ class CambiosPendientesAdmin(admin.ModelAdmin):
 class HistorialBecariosAdmin(admin.ModelAdmin):
     list_display = ('dni_becario', 'anyo', 'fecha_asignacion', 'fecha_renuncia')
 
+class TitulacionAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nombre')
+
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Centro, CentroAdmin)
@@ -45,3 +49,4 @@ admin.site.register(AsistenciaFormacion)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
+admin.site.register(Titulacion, TitulacionAdmin)
