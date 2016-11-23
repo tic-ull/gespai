@@ -11,15 +11,24 @@ def import_csv_becarios(csv_file):
 
     for index, row in enumerate(reader):
 
+        new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[10])
+        new_titulacion.nombre = row[11].decode('utf-8')
+        try:
+            new_titulacion.full_clean()
+            new_titulacion.save()
+        except ValidationError as e:
+            errors.append("Error en linea " +
+                          unicode(index + 1) + ": " + unicode(e.error_dict))
+
         new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
-        apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
-        telefono=row[8] or None, titulacion=row[11], permisos=has_permisos(row[9]))
+                         apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
+                         telefono=row[8] or None, titulacion=new_titulacion, permisos=has_permisos(row[9]))
         try:
             new_becario.full_clean()
             new_becario.save()
         except ValidationError as e:
             errors.append("Error en linea " +
-                                unicode(index + 1) + ": " + unicode(e.error_dict))
+                          unicode(index + 1) + ": " + unicode(e.error_dict))
     if errors:
         raise ValidationError(errors)
 
@@ -57,20 +66,23 @@ def import_csv_centros_plazas(csv_file):
                           unicode(index + 1) + ": " + unicode(e.error_dict))
 
         if is_dni(row[6]):
-            # De nuevo se omite usar get_or_create ya que hay que hacer validación
+            # De nuevo se omite usar get_or_create ya que hay que hacer
+            # validación
             try:
                 becario = models.Becario.objects.get(dni=row[6])
                 becario.plaza_asignada = new_plaza
                 becario.save()
             except ObjectDoesNotExist:
+                if is_codigo_tit(row[14]):
+                    new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[14])
                 becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
-                apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
-                email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
-                titulacion=row[14])
+                                         apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
+                                         email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
+                                         titulacion=new_titulacion)
                 try:
                     # Se asigna la plaza tras la creación del objeto para que se disparen
                     # las verificaciones del método save()
-                    becario.plaza_asignada=new_plaza
+                    becario.plaza_asignada = new_plaza
                     becario.full_clean()
                     becario.save()
                 except ValidationError as e:
@@ -93,6 +105,13 @@ def find_nombre(rows, ind):
 def is_dni(dni):
     if len(dni) == 8:
         if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
+            return True
+    return False
+
+
+def is_codigo_tit(cod):
+    if len(cod) == 4:
+        if cod[0].isalpha and cod[1:].isdigit():
             return True
     return False
 
