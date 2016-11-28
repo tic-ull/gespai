@@ -16,11 +16,14 @@ def upload_becarios(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            try:
-                import_csv_becarios(request.FILES['csv_file_field'])
-            except ValidationError as e:
-                for error in e.error_list:
-                    messages.error(request, error)
+            errors = import_csv_becarios(request.FILES['csv_file_field'])
+            if errors:
+                print('Errores en Becarios')
+                for error in errors:
+                    error_message = 'Error en linea ' + str(error[0]) + ': '
+                    for key, value in error[1].error_dict.iteritems():
+                        error_message += key + ': ' + unicode(value[0].messages[0]) + ' '
+                    messages.error(request, error_message)
                 return HttpResponseRedirect('/upload/becarios')
             return HttpResponseRedirect('/upload')
     else:
@@ -31,11 +34,14 @@ def upload_centros_plazas(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            try:
-                import_csv_centros_plazas(request.FILES['csv_file_field'])
-            except ValidationError as e:
-                for error in e.error_list:
-                    messages.error(request, error)
+            errors = import_csv_centros_plazas(request.FILES['csv_file_field'])
+            if errors:
+                print('errores en Plazas y Centros')
+                for error in errors:
+                    error_message = 'Error en linea ' + str(error[0]) + ': '
+                    for key, value in error[1].error_dict.iteritems():
+                        error_message += key + ': ' + unicode(value[0].messages[0]) + ' '
+                    messages.error(request, error_message)
                 return HttpResponseRedirect('/upload/plazas')
             return HttpResponseRedirect('/upload')
     else:

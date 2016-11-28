@@ -18,8 +18,7 @@ def import_csv_becarios(csv_file):
                 new_titulacion.full_clean()
                 new_titulacion.save()
             except ValidationError as e:
-                errors.append("Error en linea " +
-                              unicode(index + 1) + ": " + unicode(e.error_dict))
+                errors.append((index + 1, e))
 
         new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
                          apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
@@ -28,10 +27,9 @@ def import_csv_becarios(csv_file):
             new_becario.full_clean()
             new_becario.save()
         except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+            errors.append((index + 1, e))
     if errors:
-        raise ValidationError(errors)
+        return errors
 
 
 def import_csv_centros_plazas(csv_file):
@@ -41,7 +39,6 @@ def import_csv_centros_plazas(csv_file):
     for index, row in enumerate(reader):
 
         nombre = find_nombre(reader, index)
-        print('nombre magico de línea: ' + str(index) + ': ' + str(nombre))
         # Se comprueba si existe ya un Centro con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
         # de los campos mediante full_clean.
@@ -63,8 +60,7 @@ def import_csv_centros_plazas(csv_file):
             new_plaza.full_clean()
             new_plaza.save()
         except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+            errors.append((index + 1, e))
 
         if is_dni(row[6]):
             # De nuevo se omite usar get_or_create ya que hay que hacer
@@ -80,7 +76,6 @@ def import_csv_centros_plazas(csv_file):
                     except ObjectDoesNotExist:
                         new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
                         new_titulacion.save()
-                #new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[14])
                 becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
@@ -92,11 +87,10 @@ def import_csv_centros_plazas(csv_file):
                     becario.full_clean()
                     becario.save()
                 except ValidationError as e:
-                    errors.append("Error en linea " +
-                                  unicode(index + 1) + ": " + unicode(e.error_dict))
+                    errors.append((index + 1, e))
 
     if errors:
-        raise ValidationError(errors)
+        return errors
 
 
 # Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
