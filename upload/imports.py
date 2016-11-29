@@ -97,20 +97,52 @@ def import_csv_plan_formacion(csv_file):
     reader = list(csv.reader(csv_file))
     errors = []
 
+    # Se recorre todo el fichero CSV para crear los cursos
     for index, row in enumerate(reader):
         if is_codigo_actividad(row[1]):
             try:
+                # Se busca la fecha de impartición del curso
                 match = re.search('(\d{2})/(\d{2})/(\d{4})', row[2])
+                # Se elimina la fecha para quedarnos solo con el nombre
+                nombre = re.sub('\(\d{2}/\d{2}/\d{4}\)', '', row[2])
                 dia = match.group(1)
                 mes = match.group(2)
                 anyo = match.group(3)
+                # Se forma una fecha apta para el campo DateTimeField
                 fecha = anyo + '-' + mes + '-' + dia
-                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2],
+                # Se crea un objeto PlanFormacion
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=nombre,
                 fecha_imparticion=fecha)
-            except:
-                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2])                
+            except AttributeError:
+                # Si no se encuentra una fecha en el nombre, se crea un curso sin fecha
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2])
 
-            new_plan_formacion.save()
+            try:
+                new_plan_formacion.full_clean()
+                new_plan_formacion.save()
+            except ValidationError as e:
+                errors.append((index + 1, e))
+
+    # Una vez creados los cursos se comprueba qué becarios han asistido
+    for index, row in enumerate(reader):
+        for ind, item in enumerate(row):
+            # Si el becario ha asistido
+            if item == 'Sí':
+                try:
+                    becario = models.Becario.objects.get(dni=row[3])
+                    # Se busca el código del curso en la primera línea del CSV
+                    curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
+                    new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
+                except ObjectDoesNotExist:
+                    print('no hay becario')
+                try:
+                    new_asistencia.full_clean()
+                    new_asistencia.save()
+                except ValidationError as e:
+                    errors.append((index + 1, e))
+
+    if errors:
+        return errors
 
 
 # Método recursivo para encontrar el nombre de Centro en campos vacíos (porque

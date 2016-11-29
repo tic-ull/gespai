@@ -28,7 +28,7 @@ def upload_becarios(request):
             return HttpResponseRedirect('/upload')
     else:
         form = forms.UploadCSVForm()
-    return render(request, 'upload/upload_becarios.html', {'form': form})
+    return render(request, 'upload/upload_form.html', {'form': form})
 
 def upload_centros_plazas(request):
     if request.method == 'POST':
@@ -46,7 +46,7 @@ def upload_centros_plazas(request):
             return HttpResponseRedirect('/upload')
     else:
         form = forms.UploadCSVForm()
-    return render(request, 'upload/upload_plazas.html', {'form': form})
+    return render(request, 'upload/upload_form.html', {'form': form})
 
 def upload_plan_formacion(request):
     if request.method == 'POST':
@@ -64,4 +64,4 @@ def upload_plan_formacion(request):
             return HttpResponseRedirect('/upload')
     else:
         form = forms.UploadCSVForm()
-    return render(request, 'upload/upload_formacion.html', {'form': form})
+    return render(request, 'upload/upload_form.html', {'form': form})
