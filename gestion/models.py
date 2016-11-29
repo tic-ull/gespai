@@ -150,16 +150,15 @@ class PrelacionBecario(models.Model):
 
 class PlanFormacion(models.Model):
 
-    class Meta:
-        # El mismo curso no puede impartirse dos veces el mismo día a la misma
-        # hora
-        unique_together = (('nombre_curso', 'fecha_imparticion'))
+    codigo = models.CharField(primary_key=True, max_length=3)
     nombre_curso = models.CharField(max_length=200)
-    lugar_imparticion = models.CharField(max_length=200)
-    fecha_imparticion = models.DateTimeField()
+    lugar_imparticion = models.CharField(max_length=200, null=True, blank=True)
+    fecha_imparticion = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+        if self.fecha_imparticion:
+            return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+        return self.nombre_curso
 
 
 class AsistenciaFormacion(models.Model):

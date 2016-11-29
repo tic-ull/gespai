@@ -40,11 +40,14 @@ class HistorialBecariosAdmin(admin.ModelAdmin):
 class TitulacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre')
 
+class PlanFormacionAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
+
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Centro, CentroAdmin)
 admin.site.register(PrelacionBecario)
-admin.site.register(PlanFormacion)
+admin.site.register(PlanFormacion, PlanFormacionAdmin)
 admin.site.register(AsistenciaFormacion)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)

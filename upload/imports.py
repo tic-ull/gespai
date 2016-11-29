@@ -3,7 +3,8 @@ import csv
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from gestion import models
-
+import re
+import pdb
 
 def import_csv_becarios(csv_file):
     reader = csv.reader(csv_file)
@@ -18,8 +19,7 @@ def import_csv_becarios(csv_file):
                 new_titulacion.full_clean()
                 new_titulacion.save()
             except ValidationError as e:
-                errors.append("Error en linea " +
-                              unicode(index + 1) + ": " + unicode(e.error_dict))
+                errors.append((index + 1, e))
 
         new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
                          apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
@@ -28,10 +28,9 @@ def import_csv_becarios(csv_file):
             new_becario.full_clean()
             new_becario.save()
         except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+            errors.append((index + 1, e))
     if errors:
-        raise ValidationError(errors)
+        return errors
 
 
 def import_csv_centros_plazas(csv_file):
@@ -41,7 +40,6 @@ def import_csv_centros_plazas(csv_file):
     for index, row in enumerate(reader):
 
         nombre = find_nombre(reader, index)
-        print('nombre magico de línea: ' + str(index) + ': ' + str(nombre))
         # Se comprueba si existe ya un Centro con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
         # de los campos mediante full_clean.
@@ -63,8 +61,7 @@ def import_csv_centros_plazas(csv_file):
             new_plaza.full_clean()
             new_plaza.save()
         except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+            errors.append((index + 1, e))
 
         if is_dni(row[6]):
             # De nuevo se omite usar get_or_create ya que hay que hacer
@@ -80,7 +77,6 @@ def import_csv_centros_plazas(csv_file):
                     except ObjectDoesNotExist:
                         new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
                         new_titulacion.save()
-                #new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[14])
                 becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
@@ -92,11 +88,61 @@ def import_csv_centros_plazas(csv_file):
                     becario.full_clean()
                     becario.save()
                 except ValidationError as e:
-                    errors.append("Error en linea " +
-                                  unicode(index + 1) + ": " + unicode(e.error_dict))
+                    errors.append((index + 1, e))
 
     if errors:
-        raise ValidationError(errors)
+        return errors
+
+def import_csv_plan_formacion(csv_file):
+    reader = list(csv.reader(csv_file))
+    errors = []
+
+    # Se recorre todo el fichero CSV para crear los cursos
+    for index, row in enumerate(reader):
+        if is_codigo_actividad(row[1]):
+            try:
+                # Se busca la fecha de impartición del curso
+                match = re.search('(\d{2})/(\d{2})/(\d{4})', row[2])
+                # Se elimina la fecha para quedarnos solo con el nombre
+                nombre = re.sub('\(\d{2}/\d{2}/\d{4}\)', '', row[2])
+                dia = match.group(1)
+                mes = match.group(2)
+                anyo = match.group(3)
+                # Se forma una fecha apta para el campo DateTimeField
+                fecha = anyo + '-' + mes + '-' + dia
+                # Se crea un objeto PlanFormacion
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=nombre,
+                fecha_imparticion=fecha)
+            except AttributeError:
+                # Si no se encuentra una fecha en el nombre, se crea un curso sin fecha
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2])
+
+            try:
+                new_plan_formacion.full_clean()
+                new_plan_formacion.save()
+            except ValidationError as e:
+                errors.append((index + 1, e))
+
+    # Una vez creados los cursos se comprueba qué becarios han asistido
+    for index, row in enumerate(reader):
+        for ind, item in enumerate(row):
+            # Si el becario ha asistido
+            if item == 'Sí':
+                try:
+                    becario = models.Becario.objects.get(dni=row[3])
+                    # Se busca el código del curso en la primera línea del CSV
+                    curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
+                    new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
+                except ObjectDoesNotExist:
+                    print('no hay becario')
+                try:
+                    new_asistencia.full_clean()
+                    new_asistencia.save()
+                except ValidationError as e:
+                    errors.append((index + 1, e))
+
+    if errors:
+        return errors
 
 
 # Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
@@ -127,3 +173,9 @@ def has_permisos(perm):
         return True
     else:
         return False
+
+def is_codigo_actividad(cod):
+    if len(cod) > 0 and len(cod) <= 3:
+        if cod[0] == 'A':
+            return True
+    return False
