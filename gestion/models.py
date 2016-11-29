@@ -156,7 +156,9 @@ class PlanFormacion(models.Model):
     fecha_imparticion = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+        if self.fecha_imparticion:
+            return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+        return self.nombre_curso
 
 
 class AsistenciaFormacion(models.Model):
