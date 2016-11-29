@@ -3,7 +3,8 @@ import csv
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from gestion import models
-
+import re
+import pdb
 
 def import_csv_becarios(csv_file):
     reader = csv.reader(csv_file)
@@ -92,6 +93,25 @@ def import_csv_centros_plazas(csv_file):
     if errors:
         return errors
 
+def import_csv_plan_formacion(csv_file):
+    reader = list(csv.reader(csv_file))
+    errors = []
+
+    for index, row in enumerate(reader):
+        if is_codigo_actividad(row[1]):
+            try:
+                match = re.search('(\d{2})/(\d{2})/(\d{4})', row[2])
+                dia = match.group(1)
+                mes = match.group(2)
+                anyo = match.group(3)
+                fecha = anyo + '-' + mes + '-' + dia
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2],
+                fecha_imparticion=fecha)
+            except:
+                new_plan_formacion = models.PlanFormacion(codigo=row[1], nombre_curso=row[2])                
+
+            new_plan_formacion.save()
+
 
 # Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
 # los nombres repetidos aparecen como campos vacíos en el CSV)
@@ -121,3 +141,9 @@ def has_permisos(perm):
         return True
     else:
         return False
+
+def is_codigo_actividad(cod):
+    if len(cod) > 0 and len(cod) <= 3:
+        if cod[0] == 'A':
+            return True
+    return False
