@@ -33,29 +33,29 @@ def import_csv_becarios(csv_file):
         return errors
 
 
-def import_csv_centros_plazas(csv_file):
+def import_csv_emplazamientos_plazas(csv_file):
     reader = list(csv.reader(csv_file))
     errors = []
 
     for index, row in enumerate(reader):
 
         nombre = find_nombre(reader, index)
-        # Se comprueba si existe ya un Centro con el mismo nombre. Si no existe,
+        # Se comprueba si existe ya un Emplazamiento con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
         # de los campos mediante full_clean.
         try:
-            new_centro = models.Centro.objects.get(nombre=nombre)
+            new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
-            new_centro = models.Centro(nombre=nombre)
-        # sobra? ya compruebo que el nombre no coincida, y Centro solo tiene
+            new_emplazamiento = models.Emplazamiento(nombre=nombre)
+        # sobra? ya compruebo que el nombre no coincida, y Emplazamiento solo tiene
         # nombre e id automática
         try:
-            new_centro.full_clean()
-            new_centro.save()
+            new_emplazamiento.full_clean()
+            new_emplazamiento.save()
         except ValidationError as e:
             errors.append("Error en linea " +
                           unicode(index + 1) + ": " + unicode(e.error_dict))
-        new_plaza = models.Plaza(pk=row[0], horario=row[1], centro=new_centro)
+        new_plaza = models.Plaza(pk=row[0], horario=row[1], emplazamiento=new_emplazamiento)
 
         try:
             new_plaza.full_clean()
@@ -146,7 +146,7 @@ def import_csv_plan_formacion(csv_file):
         return errors
 
 
-# Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
+# Método recursivo para encontrar el nombre de Emplazamiento en campos vacíos (porque
 # los nombres repetidos aparecen como campos vacíos en el CSV)
 def find_nombre(rows, ind):
     if rows[ind][2]:
