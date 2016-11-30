@@ -43,12 +43,16 @@ class TitulacionAdmin(admin.ModelAdmin):
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
 
+class AsistenciaFormacionAdmin(admin.ModelAdmin):
+    list_display = ('becario', 'curso', 'calificacion')
+    list_filter = ['curso']
+
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Centro, CentroAdmin)
 admin.site.register(PrelacionBecario)
 admin.site.register(PlanFormacion, PlanFormacionAdmin)
-admin.site.register(AsistenciaFormacion)
+admin.site.register(AsistenciaFormacion, AsistenciaFormacionAdmin)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
