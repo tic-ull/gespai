@@ -78,6 +78,7 @@ class Becario(models.Model):
                               validators=[validators.RegexValidator(nombre_regex)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
+    orden = models.PositiveIntegerField(unique=True)
     dni = models.CharField(primary_key=True, validators=[dni_validator],
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')

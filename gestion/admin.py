@@ -6,7 +6,7 @@ from .models import (Becario, Plaza, Centro, PrelacionBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
+    list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
     'plaza_asignada', 'estado', 'permisos')
     list_filter = ['plaza_asignada', 'titulacion', 'estado', 'permisos']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
