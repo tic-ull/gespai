@@ -6,7 +6,7 @@ from .models import (Becario, Plaza, Centro, PrelacionBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
+    list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
     'plaza_asignada', 'estado', 'permisos')
     list_filter = ['plaza_asignada', 'titulacion', 'estado', 'permisos']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
@@ -43,12 +43,16 @@ class TitulacionAdmin(admin.ModelAdmin):
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
 
+class AsistenciaFormacionAdmin(admin.ModelAdmin):
+    list_display = ('becario', 'curso', 'calificacion')
+    list_filter = ['curso']
+
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Centro, CentroAdmin)
 admin.site.register(PrelacionBecario)
 admin.site.register(PlanFormacion, PlanFormacionAdmin)
-admin.site.register(AsistenciaFormacion)
+admin.site.register(AsistenciaFormacion, AsistenciaFormacionAdmin)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
