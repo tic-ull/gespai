@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import (Becario, Plaza, Emplazamiento, PrelacionBecario, PlanFormacion,
+from .models import (Becario, Plaza, Emplazamiento, PreferenciasBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
@@ -50,7 +50,7 @@ class AsistenciaFormacionAdmin(admin.ModelAdmin):
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Emplazamiento, EmplazamientoAdmin)
-admin.site.register(PrelacionBecario)
+admin.site.register(PreferenciasBecario)
 admin.site.register(PlanFormacion, PlanFormacionAdmin)
 admin.site.register(AsistenciaFormacion, AsistenciaFormacionAdmin)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)

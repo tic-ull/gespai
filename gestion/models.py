@@ -135,7 +135,7 @@ class Becario(models.Model):
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
 
-class PrelacionBecario(models.Model):
+class PreferenciasBecario(models.Model):
 
     class Meta:
         # Un becario solo puede indicar su preferencia para una plaza una sola vez
