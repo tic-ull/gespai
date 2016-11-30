@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import (Becario, Plaza, Centro, PrelacionBecario, PlanFormacion,
+from .models import (Becario, Plaza, Emplazamiento, PrelacionBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
@@ -20,15 +20,15 @@ class PlazaInline(admin.StackedInline):
     extra = 0
 
 class PlazaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'centro', 'horario')
+    list_display = ('id', 'emplazamiento', 'horario')
     inlines = [BecarioInline]
 
-class CentroAdmin(admin.ModelAdmin):
+class EmplazamientoAdmin(admin.ModelAdmin):
     inlines = [PlazaInline]
 
 class ResponsableAulaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido1', 'apellido2', 'centro', 'dni', 'email', 'telefono')
-    list_filter = ['centro']
+    list_display = ('nombre', 'apellido1', 'apellido2', 'emplazamiento', 'dni', 'email', 'telefono')
+    list_filter = ['emplazamiento']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
 
 class CambiosPendientesAdmin(admin.ModelAdmin):
@@ -49,7 +49,7 @@ class AsistenciaFormacionAdmin(admin.ModelAdmin):
 
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
-admin.site.register(Centro, CentroAdmin)
+admin.site.register(Emplazamiento, EmplazamientoAdmin)
 admin.site.register(PrelacionBecario)
 admin.site.register(PlanFormacion, PlanFormacionAdmin)
 admin.site.register(AsistenciaFormacion, AsistenciaFormacionAdmin)

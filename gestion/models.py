@@ -38,7 +38,7 @@ def codigo_tit_validator(codigo):
     )
 
 
-class Centro(models.Model):
+class Emplazamiento(models.Model):
     nombre = models.CharField(max_length=200)
 
     def __unicode__(self):
@@ -50,7 +50,7 @@ class Plaza(models.Model):
         ('M', 'Mañana'),
         ('T', 'Tarde'),
     )
-    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+    emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
     def __str__(self):
@@ -185,7 +185,7 @@ class ResponsableAula(models.Model):
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
-    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+    emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 
     def __unicode__(self):
         context = {
