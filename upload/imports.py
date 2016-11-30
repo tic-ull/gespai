@@ -21,7 +21,7 @@ def import_csv_becarios(csv_file):
             except ValidationError as e:
                 errors.append((index + 1, e))
 
-        new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
+        new_becario = models.Becario(orden=row[1],estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
                          apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
                          telefono=row[8] or None, titulacion=new_titulacion, permisos=has_permisos(row[9]))
         try:
@@ -77,10 +77,11 @@ def import_csv_centros_plazas(csv_file):
                     except ObjectDoesNotExist:
                         new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
                         new_titulacion.save()
-                becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
+                becario = models.Becario(orden=row[5], dni=row[6], apellido1=row[7].decode('utf-8'),
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
                                          titulacion=new_titulacion)
+                print("Intento crear a: " + row[6])
                 try:
                     # Se asigna la plaza tras la creación del objeto para que se disparen
                     # las verificaciones del método save()
