@@ -40,11 +40,16 @@ class HistorialBecariosAdmin(admin.ModelAdmin):
 class TitulacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre')
 
+class AsistenciaFormacionInline(admin.TabularInline):
+    model = AsistenciaFormacion
+    extra = 0
+
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
+    inlines = [AsistenciaFormacionInline]
 
 class AsistenciaFormacionAdmin(admin.ModelAdmin):
-    list_display = ('becario', 'curso', 'calificacion')
+    list_display = ('becario', 'curso', 'calificacion', 'asistencia')
     list_filter = ['curso']
 
 admin.site.register(Becario, BecarioAdmin)
