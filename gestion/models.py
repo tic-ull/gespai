@@ -155,6 +155,7 @@ class PlanFormacion(models.Model):
     nombre_curso = models.CharField(max_length=200)
     lugar_imparticion = models.CharField(max_length=200, null=True, blank=True)
     fecha_imparticion = models.DateTimeField(null=True, blank=True)
+    asistentes = models.ManyToManyField(Becario, through='AsistenciaFormacion')
 
     def __unicode__(self):
         if self.fecha_imparticion:
@@ -171,6 +172,7 @@ class AsistenciaFormacion(models.Model):
     calificacion = models.DecimalField(
         max_digits=4, decimal_places=2, null=True, blank=True, default=None,
         validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
+    asistencia = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.becario) + ' - ' + unicode(self.curso)
