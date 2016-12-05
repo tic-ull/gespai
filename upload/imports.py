@@ -21,7 +21,7 @@ def import_csv_becarios(csv_file):
             except ValidationError as e:
                 errors.append((index + 1, e))
 
-        new_becario = models.Becario(estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
+        new_becario = models.Becario(orden=row[1],estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
                          apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
                          telefono=row[8] or None, titulacion=new_titulacion, permisos=has_permisos(row[9]))
         try:
@@ -33,29 +33,29 @@ def import_csv_becarios(csv_file):
         return errors
 
 
-def import_csv_centros_plazas(csv_file):
+def import_csv_emplazamientos_plazas(csv_file):
     reader = list(csv.reader(csv_file))
     errors = []
 
     for index, row in enumerate(reader):
 
         nombre = find_nombre(reader, index)
-        # Se comprueba si existe ya un Centro con el mismo nombre. Si no existe,
+        # Se comprueba si existe ya un Emplazamiento con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
         # de los campos mediante full_clean.
         try:
-            new_centro = models.Centro.objects.get(nombre=nombre)
+            new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
-            new_centro = models.Centro(nombre=nombre)
-        # sobra? ya compruebo que el nombre no coincida, y Centro solo tiene
+            new_emplazamiento = models.Emplazamiento(nombre=nombre)
+        # sobra? ya compruebo que el nombre no coincida, y Emplazamiento solo tiene
         # nombre e id automática
         try:
-            new_centro.full_clean()
-            new_centro.save()
+            new_emplazamiento.full_clean()
+            new_emplazamiento.save()
         except ValidationError as e:
             errors.append("Error en linea " +
                           unicode(index + 1) + ": " + unicode(e.error_dict))
-        new_plaza = models.Plaza(pk=row[0], horario=row[1], centro=new_centro)
+        new_plaza = models.Plaza(pk=row[0], horario=row[1], emplazamiento=new_emplazamiento)
 
         try:
             new_plaza.full_clean()
@@ -77,10 +77,11 @@ def import_csv_centros_plazas(csv_file):
                     except ObjectDoesNotExist:
                         new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
                         new_titulacion.save()
-                becario = models.Becario(dni=row[6], apellido1=row[7].decode('utf-8'),
+                becario = models.Becario(orden=row[5], dni=row[6], apellido1=row[7].decode('utf-8'),
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
                                          titulacion=new_titulacion)
+                print("Intento crear a: " + row[6])
                 try:
                     # Se asigna la plaza tras la creación del objeto para que se disparen
                     # las verificaciones del método save()
@@ -125,27 +126,34 @@ def import_csv_plan_formacion(csv_file):
 
     # Una vez creados los cursos se comprueba qué becarios han asistido
     for index, row in enumerate(reader):
-        for ind, item in enumerate(row):
-            # Si el becario ha asistido
-            if item == 'Sí':
-                try:
-                    becario = models.Becario.objects.get(dni=row[3])
+        if is_dni(row[3]):
+            try:
+                # Se busca el becario antes de entrar al bucle para reducir el número
+                # de accesos a la BD
+                becario = models.Becario.objects.get(dni=row[3])
+                # Necesito saber el índice de la columna del CSV en la que me encuentro
+                # para poder buscar el código de curso asociado a esa columna en la primera línea
+                for ind, item in enumerate(row):
                     # Se busca el código del curso en la primera línea del CSV
-                    curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
-                    new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
-                except ObjectDoesNotExist:
-                    print('no hay becario')
-                try:
-                    new_asistencia.full_clean()
-                    new_asistencia.save()
-                except ValidationError as e:
-                    errors.append((index + 1, e))
+                    if is_codigo_actividad(reader[0][ind]):
+                        curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
+                        new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
+                        try:
+                            # Si el becario ha asistido
+                            if item == 'Sí':
+                                new_asistencia.asistencia = True
+                            new_asistencia.full_clean()
+                            new_asistencia.save()
+                        except ValidationError as e:
+                            errors.append((index + 1, e))
+            except ObjectDoesNotExist as e:
+                errors.append((index + 1, e))
 
     if errors:
         return errors
 
 
-# Método recursivo para encontrar el nombre de Centro en campos vacíos (porque
+# Método recursivo para encontrar el nombre de Emplazamiento en campos vacíos (porque
 # los nombres repetidos aparecen como campos vacíos en el CSV)
 def find_nombre(rows, ind):
     if rows[ind][2]:

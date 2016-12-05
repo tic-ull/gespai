@@ -2,11 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import (Becario, Plaza, Centro, PrelacionBecario, PlanFormacion,
+from .models import (Becario, Plaza, Emplazamiento, PreferenciasBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
 
 class BecarioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
+    list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
     'plaza_asignada', 'estado', 'permisos')
     list_filter = ['plaza_asignada', 'titulacion', 'estado', 'permisos']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
@@ -20,15 +20,15 @@ class PlazaInline(admin.StackedInline):
     extra = 0
 
 class PlazaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'centro', 'horario')
+    list_display = ('id', 'emplazamiento', 'horario')
     inlines = [BecarioInline]
 
-class CentroAdmin(admin.ModelAdmin):
+class EmplazamientoAdmin(admin.ModelAdmin):
     inlines = [PlazaInline]
 
 class ResponsableAulaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido1', 'apellido2', 'centro', 'dni', 'email', 'telefono')
-    list_filter = ['centro']
+    list_display = ('nombre', 'apellido1', 'apellido2', 'emplazamiento', 'dni', 'email', 'telefono')
+    list_filter = ['emplazamiento']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
 
 class CambiosPendientesAdmin(admin.ModelAdmin):
@@ -40,15 +40,29 @@ class HistorialBecariosAdmin(admin.ModelAdmin):
 class TitulacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre')
 
+class AsistenciaFormacionInline(admin.TabularInline):
+    model = AsistenciaFormacion
+    extra = 0
+
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
+    inlines = [AsistenciaFormacionInline]
+
+class AsistenciaFormacionAdmin(admin.ModelAdmin):
+    list_display = ('becario', 'get_estado', 'curso', 'calificacion', 'asistencia')
+    list_filter = ['curso']
+
+    def get_estado(self, obj):
+        return obj.becario.get_estado_display()
+    get_estado.short_description = "Estado"
+    get_estado.admin_order_field = 'becario__estado'
 
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
-admin.site.register(Centro, CentroAdmin)
-admin.site.register(PrelacionBecario)
+admin.site.register(Emplazamiento, EmplazamientoAdmin)
+admin.site.register(PreferenciasBecario)
 admin.site.register(PlanFormacion, PlanFormacionAdmin)
-admin.site.register(AsistenciaFormacion)
+admin.site.register(AsistenciaFormacion, AsistenciaFormacionAdmin)
 admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)

@@ -38,7 +38,7 @@ def codigo_tit_validator(codigo):
     )
 
 
-class Centro(models.Model):
+class Emplazamiento(models.Model):
     nombre = models.CharField(max_length=200)
 
     def __unicode__(self):
@@ -50,7 +50,7 @@ class Plaza(models.Model):
         ('M', 'Mañana'),
         ('T', 'Tarde'),
     )
-    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+    emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
     def __str__(self):
@@ -78,6 +78,7 @@ class Becario(models.Model):
                               validators=[validators.RegexValidator(nombre_regex)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
+    orden = models.PositiveIntegerField(unique=True)
     dni = models.CharField(primary_key=True, validators=[dni_validator],
                            max_length=8)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
@@ -134,7 +135,7 @@ class Becario(models.Model):
         }
         return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
 
-class PrelacionBecario(models.Model):
+class PreferenciasBecario(models.Model):
 
     class Meta:
         # Un becario solo puede indicar su preferencia para una plaza una sola vez
@@ -154,6 +155,7 @@ class PlanFormacion(models.Model):
     nombre_curso = models.CharField(max_length=200)
     lugar_imparticion = models.CharField(max_length=200, null=True, blank=True)
     fecha_imparticion = models.DateTimeField(null=True, blank=True)
+    asistentes = models.ManyToManyField(Becario, through='AsistenciaFormacion')
 
     def __unicode__(self):
         if self.fecha_imparticion:
@@ -170,6 +172,7 @@ class AsistenciaFormacion(models.Model):
     calificacion = models.DecimalField(
         max_digits=4, decimal_places=2, null=True, blank=True, default=None,
         validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
+    asistencia = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.becario) + ' - ' + unicode(self.curso)
@@ -184,7 +187,7 @@ class ResponsableAula(models.Model):
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
-    centro = models.ForeignKey(Centro, on_delete=models.CASCADE)
+    emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 
     def __unicode__(self):
         context = {
