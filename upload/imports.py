@@ -126,21 +126,28 @@ def import_csv_plan_formacion(csv_file):
 
     # Una vez creados los cursos se comprueba qué becarios han asistido
     for index, row in enumerate(reader):
-        for ind, item in enumerate(row):
-            # Si el becario ha asistido
-            if item == 'Sí':
-                try:
-                    becario = models.Becario.objects.get(dni=row[3])
+        if is_dni(row[3]):
+            try:
+                # Se busca el becario antes de entrar al bucle para reducir el número
+                # de accesos a la BD
+                becario = models.Becario.objects.get(dni=row[3])
+                # Necesito saber el índice de la columna del CSV en la que me encuentro
+                # para poder buscar el código de curso asociado a esa columna en la primera línea
+                for ind, item in enumerate(row):
                     # Se busca el código del curso en la primera línea del CSV
-                    curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
-                    new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
-                except ObjectDoesNotExist:
-                    print('no hay becario')
-                try:
-                    new_asistencia.full_clean()
-                    new_asistencia.save()
-                except ValidationError as e:
-                    errors.append((index + 1, e))
+                    if is_codigo_actividad(reader[0][ind]):
+                        curso = models.PlanFormacion.objects.get(codigo=reader[0][ind])
+                        new_asistencia = models.AsistenciaFormacion(becario=becario, curso=curso)
+                        try:
+                            # Si el becario ha asistido
+                            if item == 'Sí':
+                                new_asistencia.asistencia = True
+                            new_asistencia.full_clean()
+                            new_asistencia.save()
+                        except ValidationError as e:
+                            errors.append((index + 1, e))
+            except ObjectDoesNotExist as e:
+                errors.append((index + 1, e))
 
     if errors:
         return errors
