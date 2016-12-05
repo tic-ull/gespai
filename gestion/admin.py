@@ -49,8 +49,13 @@ class PlanFormacionAdmin(admin.ModelAdmin):
     inlines = [AsistenciaFormacionInline]
 
 class AsistenciaFormacionAdmin(admin.ModelAdmin):
-    list_display = ('becario', 'curso', 'calificacion', 'asistencia')
+    list_display = ('becario', 'get_estado', 'curso', 'calificacion', 'asistencia')
     list_filter = ['curso']
+
+    def get_estado(self, obj):
+        return obj.becario.get_estado_display()
+    get_estado.short_description = "Estado"
+    get_estado.admin_order_field = 'becario__estado'
 
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
