@@ -11,7 +11,7 @@
     {% for becario in object_list %}
       <tr>
         <td>{{ becario.orden }}</td>
-        <td><a href="">{{ becario }}</a></td>
+        <td><a href="{% url 'cambios:cambio' becario.orden %}">{{ becario }}</a></td>
         <td>{{ becario.get_estado_display }}</td>
         <td>{{ becario.plaza_asignada }}</td>
       </tr>

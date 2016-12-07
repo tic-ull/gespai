@@ -1,0 +1,10 @@
+{% if becario %}
+  <p>{{ becario.email }}</p>
+  <form action="" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <p><input type="submit" value="Cambiar"/></p>
+  </form>
+{% else %}
+  <p>No se encuentra un becario con el orden especificado.</p>
+{% endif %}
