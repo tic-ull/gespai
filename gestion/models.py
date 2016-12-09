@@ -53,11 +53,8 @@ class Plaza(models.Model):
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
-    def __str__(self):
-        return "Plaza #" + str(self.pk) + " - " + self.get_horario_display()
-
     def __unicode__(self):
-        return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
+        return 'Plaza #' + unicode(self.pk) + ': ' + unicode(self.emplazamiento) + ' - ' + self.get_horario_display()
 
 class Titulacion(models.Model):
     codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
