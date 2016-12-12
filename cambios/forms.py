@@ -17,10 +17,10 @@ class CambioBecarioForm(forms.Form):
         ('T', 'Traslado'),
     )
 
-    plaza_cambio = forms.ModelChoiceField(queryset=models.Plaza.objects.all())
+    plaza_cambio = forms.ModelChoiceField(label="Plaza de cambio", queryset=models.Plaza.objects.all())
     # TODO: Si es estado_cambio = 'Traslado', plaza_cambio no debe ser null
-    estado_cambio = forms.ChoiceField(choices=ESTADOS)
-    fecha_cambio = forms.DateField(widget=forms.SelectDateWidget)
+    estado_cambio = forms.ChoiceField(label="Estado de cambio", choices=ESTADOS)
+    fecha_cambio = forms.DateField(label="Fecha de cambio", widget=forms.SelectDateWidget)
 
     #def clean(self):
 
