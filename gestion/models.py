@@ -91,11 +91,6 @@ class Becario(models.Model):
         super(Becario, self).__init__(*args, **kwargs)
         self.__plaza_previa = self.plaza_asignada
 
-    def clean(self):
-        entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni).count()
-        if entradas_historial >= 5:
-            raise ValidationError('El becario al que quiere asignar una plaza ya ha recibido beca en 5 convocatorias.')
-
     def save(self, *args, **kwargs):
         '''if self.pk is not None:
             # Si el objeto ya existe, guardo sus valores
@@ -229,7 +224,7 @@ class HistorialBecarios(models.Model):
     dni_becario = models.CharField(validators=[dni_validator],max_length=8)
     anyo = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
     fecha_asignacion = models.DateField(auto_now_add=True)
-    fecha_renuncia = models.DateField(null=True)
+    fecha_renuncia = models.DateField(null=True, blank=True)
 
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
