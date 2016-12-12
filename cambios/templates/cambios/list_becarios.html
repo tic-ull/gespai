@@ -2,7 +2,7 @@
 <div class="container-fluid">
     <h1>Becarios</h1> {% if becario_list %}
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-striped">
             <tr>
                 <th>Orden</th>
                 <th>Nombre</th>
@@ -14,7 +14,7 @@
                 <td>{{ becario.orden }}</td>
                 <td><a href="{% url 'cambios:cambio' becario.orden %}">{{ becario }}</a></td>
                 <td>{{ becario.get_estado_display }}</td>
-                <td>{{ becario.plaza_asignada }}</td>
+                <td>{% if becario.plaza_asignada %}{{ becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</td>
             </tr>
             {% endfor %}
         </table>
