@@ -32,11 +32,11 @@ def cambio_becario(request, orden_becario):
                 new_cambio_pendiente.full_clean()
                 new_cambio_pendiente.save()
             except ValidationError as e:
-                #pdb.set_trace()
-                print("error al meter el rollo " + e.message)
-                messages.error(request, "Se ha producido un error al almacenar el cambio.\
-                O bien está intentando solicitar un cambio ya existente o el becario para\
-                el que solicita el cambio ya ha recibido beca en cinco convocatorias")
+                if e.messages[0].startswith('Cambios pendientes'):
+                    messages.error(request, "Ya existe una solicitud de cambio para este becario y esta plaza\
+                    para la fecha indicada.")
+                else:
+                    messages.error(request, e.messages[0])
                 return HttpResponseRedirect('/cambios/' + orden_becario)
             return HttpResponseRedirect('/cambios')
 
