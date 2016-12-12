@@ -1,8 +1,10 @@
+#coding=utf-8
 from django.shortcuts import render
 from django.views import generic
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+import pdb
 
 from gestion import models
 from . import forms
@@ -22,7 +24,7 @@ def cambio_becario(request, orden_becario):
     if request.method == 'POST':
         form = forms.CambioBecarioForm(request.POST, becario=becario)
         if form.is_valid():
-            print(form.cleaned_data)
+            print("El form esta bien")
             new_cambio_pendiente = models.CambiosPendientes(becario=becario,
             plaza=form.cleaned_data['plaza_cambio'],fecha_cambio=form.cleaned_data['fecha_cambio'],
             estado_cambio=form.cleaned_data['estado_cambio'])
@@ -30,7 +32,11 @@ def cambio_becario(request, orden_becario):
                 new_cambio_pendiente.full_clean()
                 new_cambio_pendiente.save()
             except ValidationError as e:
-                messages.error(request, e.message)
+                #pdb.set_trace()
+                print("error al meter el rollo " + e.message)
+                messages.error(request, "Se ha producido un error al almacenar el cambio.\
+                O bien está intentando solicitar un cambio ya existente o el becario para\
+                el que solicita el cambio ya ha recibido beca en cinco convocatorias")
                 return HttpResponseRedirect('/cambios/' + orden_becario)
             return HttpResponseRedirect('/cambios')
 
