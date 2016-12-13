@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+import notifications.urls
 
 from . import forms
 
@@ -25,6 +26,7 @@ urlpatterns = [
     url(r'^upload/', include('upload.urls')),
     url(r'^cambios/', include('cambios.urls')),
     url(r'^$', TemplateView.as_view(template_name='gespai/index.html'), name='index'),
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
     url(r'^login/$', auth_views.login, {'authentication_form': forms.LoginForm}),
     url('^', include('django.contrib.auth.urls'))
 ]
