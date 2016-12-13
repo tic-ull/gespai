@@ -4,16 +4,23 @@ from django.views import generic
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
 from gestion import models
 from . import forms
 
 # Create your views here.
 
+def group_check(user):
+    return user.groups.filter(name__in=['osl', 'tisu']).exists()
+
+@method_decorator(user_passes_test(group_check), name='dispatch')
 class ListBecariosView(generic.ListView):
     template_name = 'cambios/list_becarios.html'
     model = models.Becario
 
+@user_passes_test(group_check)
 def cambio_becario(request, orden_becario):
     try:
         becario = models.Becario.objects.get(orden=orden_becario)

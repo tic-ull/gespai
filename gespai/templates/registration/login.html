@@ -22,7 +22,7 @@
                           <hr/>
                         {% endif %}
                         <input type="submit" tabindex="4" value="Iniciar sesi&oacute;n" accesskey="l" class="btn btn-primary btn-lg btn-block" id="submit" name="submit">
-                        <input type="hidden" name="next" value="{% url 'index' %}" />
+                        <input type="hidden" name="next" value="{{ next }}" />
                         <div class="row">
                             <div class="col-md-6 col-xs-6"></div>
                             <div class="col-md-6 col-xs-6">
