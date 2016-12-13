@@ -1,14 +1,10 @@
 {% extends "gespai/base.html" %} {% block content %}
 <div class="container">
-    {% if becario %} {% if messages %}
-    <div class="content-section alert alert-danger">
-      <p><strong>Errores</strong></p>
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-                {% endfor %}
-        </ul>
-    </div>
+  {% if becario %}
+    {% if messages %}
+      {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</div>
+      {% endfor %}
     {% endif %}
     <div class="content-section">
         <h1 class="page-header">Datos del Becario</h1>
@@ -28,8 +24,11 @@
             <p><input type="submit" value="Solicitar cambio" class="btn btn-primary" /></p>
         </form>
     </div>
-    {% else %}
-    <p>No se encuentra un becario con el orden especificado.</p>
-    {% endif %}
+  {% else %}
+    <div class="content-section">
+      <h1 class="page-header">Error</h1>
+      <div class="alert alert-danger">No se encuentra un becario con el orden especificado.</div>
+    </div>
+  {% endif %}
 </div>
 {% endblock content %}
