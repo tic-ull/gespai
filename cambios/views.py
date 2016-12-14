@@ -49,3 +49,24 @@ def cambio_becario(request, orden_becario):
     else:
         form = forms.CambioBecarioForm(becario=becario)
     return render(request, 'cambios/cambio_becario.html', {'becario': becario, 'form': form})
+
+def aceptar_cambio(request, id_cambio):
+    try:
+        cambio = models.CambiosPendientes.objects.get(pk=id_cambio)
+    except models.CambiosPendientes.DoesNotExist:
+        cambio = None
+
+    if(request.POST.get('aceptar')):
+        becario = cambio.becario
+        becario.plaza_asignada = cambio.plaza
+        if cambio.estado_cambio == 'T':
+            becario.estado = 'A'
+        else:
+            becario.estado = cambio.estado_cambio
+        try:
+            becario.full_clean()
+            becario.save()
+            messages.success(request, "Becario modificado con éxito", extra_tags='alert alert-success')
+        except ValidationError as e:
+            messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+    return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
