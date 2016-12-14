@@ -34,13 +34,13 @@ INSTALLED_APPS = [
     'gestion.apps.GestionConfig',
     'upload.apps.UploadConfig',
     'cambios.apps.CambiosConfig',
-    'notifications',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'notifications',
 ]
 
 MIDDLEWARE = [

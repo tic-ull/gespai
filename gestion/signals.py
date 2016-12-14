@@ -9,4 +9,8 @@ from notifications.signals import notify
 def cambio_estado(sender, **kwargs):
     osl = Group.objects.get(name='osl')
     instance = kwargs.get('instance')
-    notify.send(instance, recipient=osl, verb='ha pasado a estar asignado', action_object=instance)
+    desc = 'Tipo de cambio: ' + instance.get_estado_cambio_display() + '\nPlaza asociada al cambio: ' + \
+        unicode(instance.plaza) + '\nFecha del cambio: ' + \
+        instance.fecha_cambio.strftime('%d/%m/%Y')
+    notify.send(instance.becario, recipient=osl, verb='tiene un nuevo cambio solicitado',
+                action_object=instance, target=instance.becario, description=desc)

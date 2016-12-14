@@ -1,0 +1,10 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+  <div class="content-section">
+    <h1 class="page-header">Notificaciones</h1>
+    <ul class="notifications">
+        {% for notice in notifications %} {% include 'notifications/notice.html' %} {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock content %}
