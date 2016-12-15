@@ -1,23 +1,27 @@
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-<form action="" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <p>{{ form.non_field_errors }}</p>
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+  {% if messages %}
+  <ul class="messages">
+      {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+  </ul>
+  {% endif %}
+  <form action="" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <p>{{ form.non_field_errors }}</p>
 
-    <p>{{ form.csv_file_field.label_tag }}</p><p>{{ form.csv_file_field.help_text }}</p>
+      <p>{{ form.csv_file_field.label_tag }}</p><p>{{ form.csv_file_field.help_text }}</p>
 
-    <p>
-         {{ form.csv_file_field }}
-         <p>{% if form.errors %}
-         <strong>Ha habido errores al añadir los datos del fichero a la BD:</strong>
-         {{ form.csv_file_field.errors }}
-         {% endif %}</p>
-    </p>
+      <p>
+           {{ form.csv_file_field }}
+           <p>{% if form.errors %}
+           <strong>Ha habido errores al añadir los datos del fichero a la BD:</strong>
+           {{ form.csv_file_field.errors }}
+           {% endif %}</p>
+      </p>
 
-    <p><input type="submit" value="Upload" /></p>
-</form>
+      <p><input type="submit" value="Subir" class="btn btn-primary" /></p>
+  </form>
+</div>
+{% endblock content %}
