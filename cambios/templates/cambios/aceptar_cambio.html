@@ -12,7 +12,7 @@
         <p><strong>Estado actual del becario: </strong>{{ cambio.becario.get_estado_display }}</p>
         <p><strong>Estado del cambio: </strong>{{ cambio.get_estado_cambio_display }}</p>
         <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
-        <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>
+        {% if cambio.plaza %}<p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>{% endif %}
         <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
         <form action="" method="POST">
             {% csrf_token %}

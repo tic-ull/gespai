@@ -18,7 +18,8 @@
         <form action="" method="post">
             {% csrf_token %} {% for field in form %}
             <div class="form-group">
-                {{ field.errors }} {{ field.label_tag }} {{ field }}
+                {{ field.label_tag }} {{ field }}
+                {% if field.errors %}<div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
             </div>
             {% endfor %}
             <p><input type="submit" value="Solicitar cambio" class="btn btn-primary" /></p>

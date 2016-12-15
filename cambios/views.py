@@ -33,6 +33,8 @@ def cambio_becario(request, orden_becario):
             new_cambio_pendiente = models.CambiosPendientes(becario=becario,
             plaza=form.cleaned_data['plaza_cambio'],fecha_cambio=form.cleaned_data['fecha_cambio'],
             estado_cambio=form.cleaned_data['estado_cambio'])
+            if new_cambio_pendiente.estado_cambio == 'R':
+                new_cambio_pendiente.plaza = None
             try:
                 new_cambio_pendiente.full_clean()
                 new_cambio_pendiente.save()
