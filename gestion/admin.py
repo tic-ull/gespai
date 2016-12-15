@@ -8,7 +8,7 @@ AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titu
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
     'plaza_asignada', 'estado', 'permisos')
-    list_filter = ['plaza_asignada', 'titulacion', 'estado', 'permisos']
+    list_filter = ['titulacion', 'estado', 'permisos']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
 
 class BecarioInline(admin.StackedInline):
@@ -46,11 +46,10 @@ class AsistenciaFormacionInline(admin.TabularInline):
 
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
-    inlines = [AsistenciaFormacionInline]
 
 class AsistenciaFormacionAdmin(admin.ModelAdmin):
-    list_display = ('becario', 'get_estado', 'curso', 'calificacion', 'asistencia')
-    list_filter = ['curso']
+    list_display = ('becario', 'get_estado', 'curso', 'asistencia', 'calificacion')
+    list_filter = ['curso', 'becario__estado', 'asistencia']
 
     def get_estado(self, obj):
         return obj.becario.get_estado_display()
