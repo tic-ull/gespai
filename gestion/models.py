@@ -86,6 +86,7 @@ class Becario(models.Model):
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
+    observaciones = models.TextField(blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Becario, self).__init__(*args, **kwargs)
@@ -204,8 +205,9 @@ class CambiosPendientes(models.Model):
     # La plaza puede ser Null si se solicita una renuncia. Según el unique_together,
     # no podrá haber dos cambios para el mismo becario en el mismo día con la plaza a Null
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE, null=True, blank=True)
-    fecha_cambio = models.DateField()
+    fecha_cambio = models.DateField(null=True, blank=True)
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
+    observaciones = models.TextField(blank=True)
 
     def clean(self):
         if self.estado_cambio == 'A':
@@ -214,7 +216,10 @@ class CambiosPendientes(models.Model):
                 raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')
 
     def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
+        if self.fecha_cambio:
+            return unicode(self.becario) + ' - ' + self.get_estado_cambio_display() +\
+            ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
+        return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
 
 class HistorialBecarios(models.Model):
 
