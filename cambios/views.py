@@ -58,7 +58,7 @@ def aceptar_cambio(request, id_cambio):
     except models.CambiosPendientes.DoesNotExist:
         cambio = None
 
-    if(request.POST.get('aceptar')):
+    if(request.POST.get('aceptar') and cambio):
         becario = cambio.becario
         becario.plaza_asignada = cambio.plaza
         if cambio.estado_cambio == 'T':
@@ -69,6 +69,7 @@ def aceptar_cambio(request, id_cambio):
             becario.full_clean()
             becario.save()
             messages.success(request, "Becario modificado con éxito", extra_tags='alert alert-success')
+            cambio.delete()
         except ValidationError as e:
             messages.error(request, e.messages[0], extra_tags='alert alert-danger')
     return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
