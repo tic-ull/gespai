@@ -201,7 +201,9 @@ class CambiosPendientes(models.Model):
         ('T', 'Traslado'),
     )
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
-    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
+    # La plaza puede ser Null si se solicita una renuncia. Según el unique_together,
+    # no podrá haber dos cambios para el mismo becario en el mismo día con la plaza a Null
+    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE, null=True, blank=True)
     fecha_cambio = models.DateField()
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
 
