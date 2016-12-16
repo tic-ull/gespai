@@ -13,13 +13,12 @@
         <p><strong>Teléfono: </strong>{{ becario.telefono }}</p>
         <p><strong>Estado: </strong>{{ becario.get_estado_display }}</p>
         <p><strong>Plaza asignada: </strong>{% if becario.plaza_asignada %}{{ becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
-        <form action="" method="post">
-          {% csrf_token %}{% for field in form_obs %}
+        <form action="" class="form-inline" method="post">
+          {% csrf_token %}
           <div class="form-group">
-              {{ field.label_tag }} {{ field }}
-              {% if field.errors %}<div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
+              {{ form_obs.observaciones.label_tag }} {{ form_obs.observaciones }}
+              {% if form_obs.observaciones.errors %}<div class="alert alert-danger">{% for error in form_obs.observaciones.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
           </div>
-          {% endfor %}
           <input type="submit" value="Añadir observaciones" class="btn btn-primary" name="observaciones" />
         </form>
     </div>

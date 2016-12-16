@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 from django.shortcuts import render
 from django.views import generic
 from django.core.exceptions import ValidationError
@@ -6,19 +6,23 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
+from django.forms import modelform_factory
 
 from gestion import models
 from . import forms
 
 # Create your views here.
 
+
 def group_check(user):
     return user.groups.filter(name__in=['osl', 'tisu']).exists()
+
 
 @method_decorator(user_passes_test(group_check), name='dispatch')
 class ListBecariosView(generic.ListView):
     template_name = 'cambios/list_becarios.html'
     model = models.Becario
+
 
 @user_passes_test(group_check)
 def cambio_becario(request, orden_becario):
@@ -29,11 +33,13 @@ def cambio_becario(request, orden_becario):
 
     if request.method == 'POST':
         if 'cambio' in request.POST:
-            form_cambio = forms.CambioBecarioForm(request.POST, becario=becario, prefix='cambio')
+            form_cambio = forms.CambioBecarioForm(
+                request.POST, becario=becario, prefix='cambio')
             if form_cambio.is_valid():
-                new_cambio_pendiente = models.CambiosPendientes(becario=becario,
-                plaza=form_cambio.cleaned_data['plaza_cambio'],fecha_cambio=form_cambio.cleaned_data['fecha_cambio'],
-                estado_cambio=form_cambio.cleaned_data['estado_cambio'], observaciones=form_cambio.cleaned_data['observaciones'])
+                new_cambio_pendiente = models.CambiosPendientes(becario=becario,plaza=form_cambio.cleaned_data['plaza'],
+                    fecha_cambio=form_cambio.cleaned_data['fecha_cambio'],
+                    estado_cambio=form_cambio.cleaned_data['estado_cambio'],
+                    observaciones=form_cambio.cleaned_data['observaciones'])
                 if new_cambio_pendiente.estado_cambio == 'R':
                     new_cambio_pendiente.plaza = None
                 try:
@@ -44,32 +50,41 @@ def cambio_becario(request, orden_becario):
                         messages.error(request, "Ya existe una solicitud de cambio para este becario y esta plaza\
                         para la fecha indicada.", extra_tags='alert alert-danger')
                     else:
-                        messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+                        messages.error(request, e.messages[
+                                       0], extra_tags='alert alert-danger')
                     return redirect('cambios:cambio', orden_becario=orden_becario)
-                messages.success(request, "Cambio solicitado con éxito", extra_tags='alert alert-success')
+                messages.success(
+                    request, "Cambio solicitado con éxito", extra_tags='alert alert-success')
                 return redirect('cambios:cambio', orden_becario=orden_becario)
-            form_obs = forms.ObservacionesBecarioForm(becario=becario, prefix='obs')
+            form_obs = forms.ObservacionesBecarioForm(
+                becario=becario, prefix='obs')
         elif 'observaciones' in request.POST:
-            form_obs = forms.ObservacionesBecarioForm(request.POST, becario=becario, prefix='obs')
+            form_obs = forms.ObservacionesBecarioForm(
+                request.POST, becario=becario, prefix='obs')
             if form_obs.is_valid():
                 becario.observaciones = form_obs.cleaned_data['observaciones']
                 try:
                     becario.full_clean()
                     becario.save()
                 except ValidationError as e:
-                    messages.error(request, messages[0], extra_tags='alert alert-danger')
+                    messages.error(request, messages[
+                                   0], extra_tags='alert alert-danger')
                     return redirect('cambios:cambio', orden_becario=orden_becario)
-                messages.success(request, "Observaciones modificadas con éxito", extra_tags='alert alert-success')
+                messages.success(
+                    request, "Observaciones modificadas con éxito", extra_tags='alert alert-success')
                 return redirect('cambios:cambio', orden_becario=orden_becario)
 
-            form_cambio = forms.CambioBecarioForm(becario=becario, prefix='cambio')
+            form_cambio = forms.CambioBecarioForm(
+                becario=becario, prefix='cambio')
 
     else:
         form_cambio = forms.CambioBecarioForm(becario=becario, prefix='cambio')
-        form_obs = forms.ObservacionesBecarioForm(becario=becario, prefix='obs')
+        form_obs = forms.ObservacionesBecarioForm(
+            becario=becario, prefix='obs')
     return render(request, 'cambios/cambio_becario.html', {'becario': becario,
-                                                            'form_cambio': form_cambio,
-                                                            'form_obs': form_obs})
+                                                           'form_cambio': form_cambio,
+                                                           'form_obs': form_obs})
+
 
 def aceptar_cambio(request, id_cambio):
     try:
@@ -87,8 +102,22 @@ def aceptar_cambio(request, id_cambio):
         try:
             becario.full_clean()
             becario.save()
-            messages.success(request, "Becario modificado con éxito", extra_tags='alert alert-success')
+            messages.success(request, "Becario modificado con éxito",
+                             extra_tags='alert alert-success')
             cambio.delete()
         except ValidationError as e:
-            messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+            messages.error(request, e.messages[
+                           0], extra_tags='alert alert-danger')
     return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
+
+
+class ModificarCambioView(generic.UpdateView):
+    model = models.CambiosPendientes
+    template_name = 'cambios/modificar_cambio.html'
+    form_class = forms.CambioBecarioForm
+    success_url = '#'
+
+    def get_form_kwargs(self):
+        kwargs = super(ModificarCambioView, self).get_form_kwargs()
+        kwargs.update({'becario': self.object.becario})
+        return kwargs
