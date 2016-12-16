@@ -10,10 +10,12 @@
         <h1 class="page-header">Datos del Cambio</h1>
         <p><strong>Nombre del becario: </strong>{{ cambio.becario }}</p>
         <p><strong>Estado actual del becario: </strong>{{ cambio.becario.get_estado_display }}</p>
+        <p><strong>Permisos: </strong>{% if cambio.becario.permisos %}Sí{% else %}No{% endif %}</p>
         <p><strong>Estado del cambio: </strong>{{ cambio.get_estado_cambio_display }}</p>
         <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
         {% if cambio.plaza %}<p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>{% endif %}
         <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
+        <p><strong>Observaciones: </strong>{{ cambio.observaciones }}</p>
         <form action="" method="POST">
             {% csrf_token %}
             <input type="submit" class="btn btn-primary" value="Aceptar cambio" name="aceptar">

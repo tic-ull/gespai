@@ -10,19 +10,29 @@
         <h1 class="page-header">Datos del Becario</h1>
         <p><strong>Nombre: </strong>{{ becario }}</p>
         <p><strong>Correo electrónico: </strong>{{ becario.email }}</p>
+        <p><strong>Teléfono: </strong>{{ becario.telefono }}</p>
         <p><strong>Estado: </strong>{{ becario.get_estado_display }}</p>
         <p><strong>Plaza asignada: </strong>{% if becario.plaza_asignada %}{{ becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
+        <form action="" method="post">
+          {% csrf_token %}{% for field in form_obs %}
+          <div class="form-group">
+              {{ field.label_tag }} {{ field }}
+              {% if field.errors %}<div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
+          </div>
+          {% endfor %}
+          <input type="submit" value="Añadir observaciones" class="btn btn-primary" name="observaciones" />
+        </form>
     </div>
     <div class="content-section">
         <h1 class="page-header">Solicitud de cambio</h1>
         <form action="" method="post">
-            {% csrf_token %} {% for field in form %}
+            {% csrf_token %} {% for field in form_cambio %}
             <div class="form-group">
                 {{ field.label_tag }} {{ field }}
                 {% if field.errors %}<div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
             </div>
             {% endfor %}
-            <p><input type="submit" value="Solicitar cambio" class="btn btn-primary" /></p>
+            <p><input type="submit" value="Solicitar cambio" class="btn btn-primary" name="cambio" /></p>
         </form>
     </div>
   {% else %}

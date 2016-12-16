@@ -28,29 +28,48 @@ def cambio_becario(request, orden_becario):
         becario = None
 
     if request.method == 'POST':
-        form = forms.CambioBecarioForm(request.POST, becario=becario)
-        if form.is_valid():
-            new_cambio_pendiente = models.CambiosPendientes(becario=becario,
-            plaza=form.cleaned_data['plaza_cambio'],fecha_cambio=form.cleaned_data['fecha_cambio'],
-            estado_cambio=form.cleaned_data['estado_cambio'])
-            if new_cambio_pendiente.estado_cambio == 'R':
-                new_cambio_pendiente.plaza = None
-            try:
-                new_cambio_pendiente.full_clean()
-                new_cambio_pendiente.save()
-            except ValidationError as e:
-                if e.messages[0].startswith('Cambios pendientes'):
-                    messages.error(request, "Ya existe una solicitud de cambio para este becario y esta plaza\
-                    para la fecha indicada.", extra_tags='alert alert-danger')
-                else:
-                    messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+        if 'cambio' in request.POST:
+            form_cambio = forms.CambioBecarioForm(request.POST, becario=becario, prefix='cambio')
+            if form_cambio.is_valid():
+                new_cambio_pendiente = models.CambiosPendientes(becario=becario,
+                plaza=form_cambio.cleaned_data['plaza_cambio'],fecha_cambio=form_cambio.cleaned_data['fecha_cambio'],
+                estado_cambio=form_cambio.cleaned_data['estado_cambio'], observaciones=form_cambio.cleaned_data['observaciones'])
+                if new_cambio_pendiente.estado_cambio == 'R':
+                    new_cambio_pendiente.plaza = None
+                try:
+                    new_cambio_pendiente.full_clean()
+                    new_cambio_pendiente.save()
+                except ValidationError as e:
+                    if e.messages[0].startswith('Cambios pendientes'):
+                        messages.error(request, "Ya existe una solicitud de cambio para este becario y esta plaza\
+                        para la fecha indicada.", extra_tags='alert alert-danger')
+                    else:
+                        messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+                    return redirect('cambios:cambio', orden_becario=orden_becario)
+                messages.success(request, "Cambio solicitado con éxito", extra_tags='alert alert-success')
                 return redirect('cambios:cambio', orden_becario=orden_becario)
-            messages.success(request, "Cambio solicitado con éxito", extra_tags='alert alert-success')
-            return redirect('cambios:cambio', orden_becario=orden_becario)
+            form_obs = forms.ObservacionesBecarioForm(becario=becario, prefix='obs')
+        elif 'observaciones' in request.POST:
+            form_obs = forms.ObservacionesBecarioForm(request.POST, becario=becario, prefix='obs')
+            if form_obs.is_valid():
+                becario.observaciones = form_obs.cleaned_data['observaciones']
+                try:
+                    becario.full_clean()
+                    becario.save()
+                except ValidationError as e:
+                    messages.error(request, messages[0], extra_tags='alert alert-danger')
+                    return redirect('cambios:cambio', orden_becario=orden_becario)
+                messages.success(request, "Observaciones modificadas con éxito", extra_tags='alert alert-success')
+                return redirect('cambios:cambio', orden_becario=orden_becario)
+
+            form_cambio = forms.CambioBecarioForm(becario=becario, prefix='cambio')
 
     else:
-        form = forms.CambioBecarioForm(becario=becario)
-    return render(request, 'cambios/cambio_becario.html', {'becario': becario, 'form': form})
+        form_cambio = forms.CambioBecarioForm(becario=becario, prefix='cambio')
+        form_obs = forms.ObservacionesBecarioForm(becario=becario, prefix='obs')
+    return render(request, 'cambios/cambio_becario.html', {'becario': becario,
+                                                            'form_cambio': form_cambio,
+                                                            'form_obs': form_obs})
 
 def aceptar_cambio(request, id_cambio):
     try:

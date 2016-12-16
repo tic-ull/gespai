@@ -3,6 +3,15 @@ import datetime
 
 from gestion import models
 
+class ObservacionesBecarioForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.becario = kwargs.pop('becario')
+        super(ObservacionesBecarioForm, self).__init__(*args, **kwargs)
+        if self.becario:
+            self.fields['observaciones'].initial = self.becario.observaciones
+
+    observaciones = forms.CharField(label="Observaciones", widget=forms.Textarea(attrs={'cols':50, 'rows':5}))
 
 class CambioBecarioForm(forms.Form):
 
@@ -22,7 +31,9 @@ class CambioBecarioForm(forms.Form):
         label="Plaza de cambio", queryset=models.Plaza.objects.all(), required=False)
     estado_cambio = forms.ChoiceField(label="Estado de cambio", choices=ESTADOS)
     fecha_cambio = forms.DateField(label="Fecha de cambio", widget=forms.SelectDateWidget,
-        initial=datetime.date.today)
+        initial=datetime.date.today, required=False)
+    observaciones = forms.CharField(label="Observaciones del cambio", widget=forms.Textarea(attrs={'cols':50, 'rows':5}),
+        required=False)
 
     def clean(self):
         cleaned_data = super(CambioBecarioForm, self).clean()
