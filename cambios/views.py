@@ -125,3 +125,7 @@ class ModificarCambioView(SuccessMessageMixin, generic.UpdateView):
         kwargs = super(ModificarCambioView, self).get_form_kwargs()
         kwargs.update({'becario': self.object.becario})
         return kwargs
+
+class ListCambiosView(generic.ListView):
+    template_name = 'cambios/list_cambios.html'
+    model = models.CambiosPendientes
