@@ -221,6 +221,15 @@ class CambiosPendientes(models.Model):
             ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
         return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
 
+class Convocatoria(models.Model):
+    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 20)]
+
+    anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
+
+    def __unicode__(self):
+        return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
+
 class HistorialBecarios(models.Model):
 
     class Meta:
