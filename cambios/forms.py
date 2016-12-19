@@ -11,7 +11,8 @@ class ObservacionesBecarioForm(forms.Form):
         if self.becario:
             self.fields['observaciones'].initial = self.becario.observaciones
 
-    observaciones = forms.CharField(label="Observaciones", widget=forms.Textarea(attrs={'cols':50, 'rows':5, 'class': 'form-control'}))
+    observaciones = forms.CharField(label="Observaciones",
+        widget=forms.Textarea(attrs={'cols':50, 'rows':5, 'class': 'form-control'}))
 
 class CambioBecarioForm(forms.ModelForm):
     class Meta:
