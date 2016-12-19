@@ -3,7 +3,8 @@ from django.contrib import admin
 # Register your models here.
 
 from .models import (Becario, Plaza, Emplazamiento, PreferenciasBecario, PlanFormacion,
-AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
+AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion,
+Convocatoria)
 
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
@@ -35,7 +36,7 @@ class CambiosPendientesAdmin(admin.ModelAdmin):
     list_display = ('becario', 'plaza', 'fecha_cambio', 'estado_cambio')
 
 class HistorialBecariosAdmin(admin.ModelAdmin):
-    list_display = ('dni_becario', 'anyo', 'fecha_asignacion', 'fecha_renuncia')
+    list_display = ('dni_becario', 'convocatoria', 'fecha_asignacion', 'fecha_renuncia')
 
 class TitulacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre')
@@ -66,3 +67,4 @@ admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
 admin.site.register(Titulacion, TitulacionAdmin)
+admin.site.register(Convocatoria)

@@ -221,15 +221,25 @@ class CambiosPendientes(models.Model):
             ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
         return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
 
+class Convocatoria(models.Model):
+    class Meta:
+        unique_together = (('anyo_inicio', 'anyo_fin'))
+    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 20)]
+
+    anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
+
+    def __unicode__(self):
+        return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
+
 class HistorialBecarios(models.Model):
 
     class Meta:
-        unique_together = (('dni_becario', 'anyo'))
-    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 1)]
+        unique_together = (('dni_becario', 'convocatoria'))
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
     dni_becario = models.CharField(validators=[dni_validator],max_length=8)
-    anyo = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    convocatoria = models.ForeignKey(Convocatoria, on_delete=models.PROTECT)
     fecha_asignacion = models.DateField(auto_now_add=True)
     fecha_renuncia = models.DateField(null=True, blank=True)
 
