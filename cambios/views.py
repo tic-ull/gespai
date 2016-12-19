@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
-from django.forms import modelform_factory
+from django.contrib.messages.views import SuccessMessageMixin
 
 from gestion import models
 from . import forms
@@ -97,6 +97,9 @@ def aceptar_cambio(request, id_cambio):
         becario.plaza_asignada = cambio.plaza
         if cambio.estado_cambio == 'T':
             becario.estado = 'A'
+        elif cambio.estado_cambio == 'R':
+            becario.estado = cambio.estado_cambio
+            becario.plaza_asignada = None
         else:
             becario.estado = cambio.estado_cambio
         try:
@@ -111,11 +114,12 @@ def aceptar_cambio(request, id_cambio):
     return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
 
 
-class ModificarCambioView(generic.UpdateView):
+class ModificarCambioView(SuccessMessageMixin, generic.UpdateView):
     model = models.CambiosPendientes
     template_name = 'cambios/modificar_cambio.html'
     form_class = forms.CambioBecarioForm
     success_url = '#'
+    success_message = "Cambio modificado con éxito"
 
     def get_form_kwargs(self):
         kwargs = super(ModificarCambioView, self).get_form_kwargs()

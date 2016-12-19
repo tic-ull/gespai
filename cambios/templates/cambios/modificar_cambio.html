@@ -1,15 +1,20 @@
 {% extends "gespai/base.html" %} {% block content %}
 <div class="container">
-  <h1 class="page-header">Modificación de cambio</h1>
-  <p><strong>Becario: </strong>{{ form.instance.becario }}</p>
-  <form action="" method="post">
-    {% csrf_token %}{% for field in form %}
-    <div class="form-group">
-        {{ field.label_tag }} {{ field }}
-        {% if field.errors %}<div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
-    </div>
-    {% endfor %}
-    <input type="submit" value="Modificar" class="btn btn-primary" name="modificar" />
-  </form>
+    {% if messages %} {% for message in messages %}
+    <div{% if message.tags %} class="{% if message.tags == 'success' %}alert alert-success{% endif %}" {% endif %}>{{ message }}</div>
+    {% endfor %} {% endif %}
+<div class="content-section">
+    <h1 class="page-header">Modificación de cambio</h1>
+    <p><strong>Becario: </strong>{{ form.instance.becario }}</p>
+    <form action="" method="post">
+        {% csrf_token %}{% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }} {{ field }} {% if field.errors %}
+            <div class="alert alert-danger">{% for error in field.errors %}{{ error }}<br>{% endfor %}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <input type="submit" value="Modificar" class="btn btn-primary" name="modificar" />
+    </form>
+</div>
 </div>
 {% endblock content %}
