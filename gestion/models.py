@@ -103,13 +103,17 @@ class Becario(models.Model):
             self.estado = 'A'
             # Se crea una entrada en HistorialBecarios para este becario en este año.
             # Si existe una entrada para este becario en este año no se hace nada.
-            HistorialBecarios.objects.get_or_create(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+            conv, c = Convocatoria.objects.get_or_create(anyo_inicio=datetime.datetime.now().year)
+            print('asignado con: ' + unicode(conv))
+            HistorialBecarios.objects.get_or_create(dni_becario=self.dni, convocatoria=conv)
         # Si el becario pasa de tener una plaza a no tener una
         elif self.__plaza_previa != None and self.plaza_asignada == None:
             print('se le quita la plaza a ' + unicode(self))
             self.estado = 'R'
             try:
-                hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+                print('renuncia con: ' + unicode(conv))
+                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=datetime.datetime.now().year)
+                hist = HistorialBecarios.objects.get(dni_becario=self.dni, convocatoria=conv)
                 hist.fecha_renuncia=datetime.datetime.now()
                 hist.save()
             except ObjectDoesNotExist:
