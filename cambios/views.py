@@ -11,20 +11,27 @@ from django.contrib.messages.views import SuccessMessageMixin
 from gestion import models
 from . import forms
 
-# Create your views here.
 
-
-def group_check(user):
+def group_check_all(user):
     return user.groups.filter(name__in=['osl', 'tisu']).exists()
 
 
-@method_decorator(user_passes_test(group_check), name='dispatch')
+def group_check_osl(user):
+    return user.groups.filter(name='osl').exists()
+
+
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
+class IndexView(generic.TemplateView):
+    template_name = 'cambios/index.html'
+
+
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
 class ListBecariosView(generic.ListView):
     template_name = 'cambios/list_becarios.html'
     model = models.Becario
 
 
-@user_passes_test(group_check)
+@user_passes_test(group_check_all)
 def cambio_becario(request, orden_becario):
     try:
         becario = models.Becario.objects.get(orden=orden_becario)
@@ -86,6 +93,7 @@ def cambio_becario(request, orden_becario):
                                                            'form_obs': form_obs})
 
 
+@user_passes_test(group_check_osl)
 def aceptar_cambio(request, id_cambio):
     try:
         cambio = models.CambiosPendientes.objects.get(pk=id_cambio)
@@ -114,6 +122,7 @@ def aceptar_cambio(request, id_cambio):
     return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
 
 
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
 class ModificarCambioView(SuccessMessageMixin, generic.UpdateView):
     model = models.CambiosPendientes
     template_name = 'cambios/modificar_cambio.html'
@@ -126,6 +135,8 @@ class ModificarCambioView(SuccessMessageMixin, generic.UpdateView):
         kwargs.update({'becario': self.object.becario})
         return kwargs
 
+
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
 class ListCambiosView(generic.ListView):
     template_name = 'cambios/list_cambios.html'
     model = models.CambiosPendientes
