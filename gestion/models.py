@@ -232,6 +232,11 @@ class Convocatoria(models.Model):
     anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
     anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
 
+    def clean(self):
+        dif = self.anyo_fin - self.anyo_inicio
+        if dif != 1:
+            raise ValidationError('Convocatoria no válida')
+
     def __unicode__(self):
         return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
 
