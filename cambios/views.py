@@ -113,6 +113,15 @@ def aceptar_cambio(request, id_cambio):
         try:
             becario.full_clean()
             becario.save()
+            # TODO mirar cuando empieza la convocatoria
+            conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year)
+            hist, c = models.HistorialBecarios.objects.get_or_create(dni_becario=becario.dni,
+                                                            convocatoria=conv)
+            if cambio.estado_cambio == 'A':
+                hist.fecha_asignacion = cambio.fecha_cambio
+            elif cambio.estado_cambio == 'R':
+                hist.fecha_renuncia = cambio.fecha_cambio
+            hist.save()
             messages.success(request, "Becario modificado con éxito",
                              extra_tags='alert alert-success')
             cambio.delete()
