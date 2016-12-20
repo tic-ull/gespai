@@ -5,7 +5,6 @@ import datetime
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.db.models.signals import post_save, post_init
 
 # Create your models here.
 
@@ -214,7 +213,7 @@ class CambiosPendientes(models.Model):
     observaciones = models.TextField(blank=True)
 
     def clean(self):
-        if self.estado_cambio == 'A':
+        if hasattr(self, 'becario') and self.estado_cambio == 'A':
             entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.becario.dni).count()
             if entradas_historial >= 5:
                 raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')

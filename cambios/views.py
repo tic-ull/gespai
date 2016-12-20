@@ -117,8 +117,10 @@ def aceptar_cambio(request, id_cambio):
                              extra_tags='alert alert-success')
             cambio.delete()
         except ValidationError as e:
-            messages.error(request, e.messages[
-                           0], extra_tags='alert alert-danger')
+            messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+            return redirect('cambios:aceptar', id_cambio=id_cambio)
+        return render(request, 'gespai/success.html', {'error': False,
+                                                       'mensaje': 'Cambio aplicado con éxito'})
     return render(request, 'cambios/aceptar_cambio.html', {'cambio': cambio})
 
 
