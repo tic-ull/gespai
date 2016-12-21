@@ -5,7 +5,7 @@ import datetime
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.db.models.signals import post_save, post_init
+from django.conf import settings
 
 # Create your models here.
 
@@ -53,11 +53,8 @@ class Plaza(models.Model):
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
-    def __str__(self):
-        return "Plaza #" + str(self.pk) + " - " + self.get_horario_display()
-
     def __unicode__(self):
-        return 'Plaza #' + unicode(self.pk) + ' - ' + self.get_horario_display()
+        return 'Plaza #' + unicode(self.pk) + ': ' + unicode(self.emplazamiento) + ' - ' + self.get_horario_display()
 
 class Titulacion(models.Model):
     codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
@@ -89,15 +86,11 @@ class Becario(models.Model):
     telefono = models.PositiveIntegerField(
         validators=[telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
+    observaciones = models.TextField(blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Becario, self).__init__(*args, **kwargs)
         self.__plaza_previa = self.plaza_asignada
-
-    def clean(self):
-        entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni).count()
-        if entradas_historial >= 5:
-            raise ValidationError('El becario al que quiere asignar una plaza ya ha recibido beca en 5 convocatorias.')
 
     def save(self, *args, **kwargs):
         '''if self.pk is not None:
@@ -110,13 +103,23 @@ class Becario(models.Model):
             self.estado = 'A'
             # Se crea una entrada en HistorialBecarios para este becario en este año.
             # Si existe una entrada para este becario en este año no se hace nada.
-            HistorialBecarios.objects.get_or_create(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+            hoy = datetime.datetime.now()
+            if hoy.month < settings.MES_INICIO_CONV:
+                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year - 1, anyo_fin=hoy.year)
+            else:
+                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year, anyo_fin=hoy.year + 1)
+            HistorialBecarios.objects.get_or_create(dni_becario=self.dni, convocatoria=conv)
         # Si el becario pasa de tener una plaza a no tener una
         elif self.__plaza_previa != None and self.plaza_asignada == None:
             print('se le quita la plaza a ' + unicode(self))
             self.estado = 'R'
             try:
-                hist = HistorialBecarios.objects.get(dni_becario=self.dni, anyo=datetime.datetime.now().year)
+                hoy = datetime.datetime.now()
+                if hoy.month < settings.MES_INICIO_CONV:
+                    conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year - 1, anyo_fin=hoy.year)
+                else:
+                    conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year, anyo_fin=hoy.year + 1)
+                hist = HistorialBecarios.objects.get(dni_becario=self.dni, convocatoria=conv)
                 hist.fecha_renuncia=datetime.datetime.now()
                 hist.save()
             except ObjectDoesNotExist:
@@ -209,30 +212,51 @@ class CambiosPendientes(models.Model):
         ('T', 'Traslado'),
     )
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
-    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
-    fecha_cambio = models.DateField()
+    # La plaza puede ser Null si se solicita una renuncia. Según el unique_together,
+    # no podrá haber dos cambios para el mismo becario en el mismo día con la plaza a Null
+    plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE, null=True, blank=True)
+    fecha_cambio = models.DateField(null=True, blank=True)
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
+    observaciones = models.TextField(blank=True)
 
     def clean(self):
-        if self.estado_cambio == 'A':
+        if hasattr(self, 'becario') and self.estado_cambio == 'A':
             entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.becario.dni).count()
             if entradas_historial >= 5:
                 raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')
 
     def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
+        if self.fecha_cambio:
+            return unicode(self.becario) + ' - ' + self.get_estado_cambio_display() +\
+            ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
+        return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
+
+class Convocatoria(models.Model):
+    class Meta:
+        unique_together = (('anyo_inicio', 'anyo_fin'))
+    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 20)]
+
+    anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
+
+    def clean(self):
+        dif = self.anyo_fin - self.anyo_inicio
+        if dif != 1:
+            raise ValidationError('Convocatoria no válida')
+
+    def __unicode__(self):
+        return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
 
 class HistorialBecarios(models.Model):
 
     class Meta:
-        unique_together = (('dni_becario', 'anyo'))
-    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 1)]
+        unique_together = (('dni_becario', 'convocatoria'))
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
     dni_becario = models.CharField(validators=[dni_validator],max_length=8)
-    anyo = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
+    convocatoria = models.ForeignKey(Convocatoria, on_delete=models.PROTECT)
     fecha_asignacion = models.DateField(auto_now_add=True)
-    fecha_renuncia = models.DateField(null=True)
+    fecha_renuncia = models.DateField(null=True, blank=True)
 
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()

@@ -3,19 +3,25 @@ from django.views.generic import TemplateView
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-import pdb
-from gestion import models
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
+from gestion import models
 from . import forms
 from .imports import import_csv_becarios, import_csv_emplazamientos_plazas, import_csv_plan_formacion
 
 # Create your views here.
 
+def group_check(user):
+    return user.groups.filter(name='osl').exists()
 
+
+@method_decorator(user_passes_test(group_check), name='dispatch')
 class UploadView(TemplateView):
     template_name = 'upload/upload.html'
 
 
+@user_passes_test(group_check)
 def upload_becarios(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
@@ -36,6 +42,7 @@ def upload_becarios(request):
     return render(request, 'upload/upload_form.html', {'form': form})
 
 
+@user_passes_test(group_check)
 def upload_emplazamientos_plazas(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
@@ -57,6 +64,7 @@ def upload_emplazamientos_plazas(request):
     return render(request, 'upload/upload_form.html', {'form': form})
 
 
+@user_passes_test(group_check)
 def upload_plan_formacion(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)

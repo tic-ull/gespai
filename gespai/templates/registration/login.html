@@ -1,0 +1,38 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 nav-ull">
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#institucional">Inicio de sesión</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade active in" id="institucional">
+                    <form action="{% url 'login' %}" id="fmi" method="post">
+                        {% csrf_token %}
+                        <!-- <input type="text" autocomplete="false" value="" accesskey="u" placeholder="Usuario" style="margin-bottom:10px;" tabindex="1" title="Introduzca su nombre de usuario de la ULL sin incluir el dominio (@ull.es). " class="form-control" name="username" id="username"> -->
+                        {{form.username}}
+                        <!-- <input type="password" autocomplete="off" value="" placeholder="Contrase&#241;a" tabindex="2" style="margin-bottom:10px;" title="Introduza su contrase&#241;a de usuario, si no la conoce acceda a la opci&oacute;n inferior &quot;Recordar contraseña&quot;." class="form-control" name="password" id="password"> -->
+                        {{form.password}}
+                        {%if form.errors %}
+                          <div class="alert alert-danger">
+                              Combinación de usuario y contraseña no válidas.
+                          </div>
+                          <hr/>
+                        {% endif %}
+                        <input type="submit" tabindex="4" value="Iniciar sesi&oacute;n" accesskey="l" class="btn btn-primary btn-lg btn-block" id="submit" name="submit">
+                        <input type="hidden" name="next" value="{{ next }}" />
+                        <div class="row">
+                            <div class="col-md-6 col-xs-6"></div>
+                            <div class="col-md-6 col-xs-6">
+                                <a href="{% url 'password_reset' %}" class="btn btn-link pull-right">Recordar contraseña</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

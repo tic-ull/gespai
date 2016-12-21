@@ -1,0 +1,32 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+    {% if cambio %} {% if messages %} {% for message in messages %}
+    <div{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</div>
+{% endfor %} {% endif %}
+<div class="content-section">
+    <h1 class="page-header">Datos del Cambio</h1>
+    <p><strong>Nombre del becario: </strong>{{ cambio.becario }}</p>
+    <p><strong>Estado actual del becario: </strong>{{ cambio.becario.get_estado_display }}</p>
+    <p><strong>Permisos: </strong>{% if cambio.becario.permisos %}Sí{% else %}No{% endif %}</p>
+    <p><strong>Estado del cambio: </strong>{{ cambio.get_estado_cambio_display }}</p>
+    <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
+    {% if cambio.plaza %}
+    <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>{% endif %}
+    <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
+    <p><strong>Observaciones: </strong>{{ cambio.observaciones }}</p>
+    {% if is_osl %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-primary" value="Aceptar cambio" name="aceptar">
+        <a href="{% url 'cambios:modificar' cambio.id %}" class="btn btn-primary">Modificar cambio</a>
+    </form>
+    {% endif %}
+</div>
+{% else %}
+<div class="content-section">
+    <h1 class="page-header">Error</h1>
+    <div class="alert alert-danger">No se encuentra un cambio con la ID especificada.</div>
+</div>
+{% endif %}
+</div>
+{% endblock content %}
