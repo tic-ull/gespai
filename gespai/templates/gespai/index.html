@@ -39,7 +39,11 @@
                                     <h4>Inicio de Sesión</h4>
                                     <p>Introduzca sus datos para acceder al sistema</p>
                                     <!-- <a class="btn btn-success btn-sm" href="{% url 'cas_login' }"><i class="fa fa-angle-double-right"></i> Acceso ULL</a> -->
+                                    {% if not user.is_authenticated %}
                                     <a class="btn btn-success btn-sm" href="{% url 'login' %}"><i class="fa fa-angle-double-right"></i> Inicie sesión</a>
+                                    {% else %}
+                                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="fa fa-angle-double-right"></i> Cerrar sesión</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
