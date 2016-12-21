@@ -5,6 +5,7 @@ import datetime
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.conf import settings
 
 # Create your models here.
 
@@ -102,14 +103,22 @@ class Becario(models.Model):
             self.estado = 'A'
             # Se crea una entrada en HistorialBecarios para este becario en este año.
             # Si existe una entrada para este becario en este año no se hace nada.
-            conv, c = Convocatoria.objects.get_or_create(anyo_inicio=datetime.datetime.now().year)
+            hoy = datetime.datetime.now()
+            if hoy.month < settings.MES_INICIO_CONV:
+                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year - 1, anyo_fin=hoy.year)
+            else:
+                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year, anyo_fin=hoy.year + 1)
             HistorialBecarios.objects.get_or_create(dni_becario=self.dni, convocatoria=conv)
         # Si el becario pasa de tener una plaza a no tener una
         elif self.__plaza_previa != None and self.plaza_asignada == None:
             print('se le quita la plaza a ' + unicode(self))
             self.estado = 'R'
             try:
-                conv, c = Convocatoria.objects.get_or_create(anyo_inicio=datetime.datetime.now().year)
+                hoy = datetime.datetime.now()
+                if hoy.month < settings.MES_INICIO_CONV:
+                    conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year - 1, anyo_fin=hoy.year)
+                else:
+                    conv, c = Convocatoria.objects.get_or_create(anyo_inicio=hoy.year, anyo_fin=hoy.year + 1)
                 hist = HistorialBecarios.objects.get(dni_becario=self.dni, convocatoria=conv)
                 hist.fecha_renuncia=datetime.datetime.now()
                 hist.save()

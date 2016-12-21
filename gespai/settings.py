@@ -129,3 +129,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "gespai/static"),]
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+# Constantes del Proyecto
+
+MES_INICIO_CONV = 10

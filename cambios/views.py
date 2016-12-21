@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.messages.views import SuccessMessageMixin
+from django.conf import settings
 
 from gestion import models
 from . import forms
@@ -113,14 +114,20 @@ def aceptar_cambio(request, id_cambio):
         try:
             becario.full_clean()
             becario.save()
-            # TODO mirar cuando empieza la convocatoria
-            conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year)
+            # Tomando como mes de inicio de la convocatoria Octubre (según la convocatoria 16/17)
+            if cambio.fecha_cambio.month < settings.MES_INICIO_CONV:
+                conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year - 1,
+                                                                    anyo_fin=cambio.fecha_cambio.year)
+            else:
+                conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year,
+                                                                    anyo_fin=cambio.fecha_cambio.year + 1)
             hist, c = models.HistorialBecarios.objects.get_or_create(dni_becario=becario.dni,
                                                             convocatoria=conv)
             if cambio.estado_cambio == 'A':
                 hist.fecha_asignacion = cambio.fecha_cambio
             elif cambio.estado_cambio == 'R':
                 hist.fecha_renuncia = cambio.fecha_cambio
+            hist.full_clean()
             hist.save()
             messages.success(request, "Becario modificado con éxito",
                              extra_tags='alert alert-success')
