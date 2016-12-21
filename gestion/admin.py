@@ -3,12 +3,13 @@ from django.contrib import admin
 # Register your models here.
 
 from .models import (Becario, Plaza, Emplazamiento, PreferenciasBecario, PlanFormacion,
-AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion)
+AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion,
+Convocatoria)
 
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
     'plaza_asignada', 'estado', 'permisos')
-    list_filter = ['plaza_asignada', 'titulacion', 'estado', 'permisos']
+    list_filter = ['titulacion', 'estado', 'permisos']
     search_fields = ['nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono']
 
 class BecarioInline(admin.StackedInline):
@@ -35,7 +36,7 @@ class CambiosPendientesAdmin(admin.ModelAdmin):
     list_display = ('becario', 'plaza', 'fecha_cambio', 'estado_cambio')
 
 class HistorialBecariosAdmin(admin.ModelAdmin):
-    list_display = ('dni_becario', 'anyo', 'fecha_asignacion', 'fecha_renuncia')
+    list_display = ('dni_becario', 'convocatoria', 'fecha_asignacion', 'fecha_renuncia')
 
 class TitulacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre')
@@ -46,11 +47,10 @@ class AsistenciaFormacionInline(admin.TabularInline):
 
 class PlanFormacionAdmin(admin.ModelAdmin):
     list_display = ('codigo', 'nombre_curso', 'fecha_imparticion', 'lugar_imparticion')
-    inlines = [AsistenciaFormacionInline]
 
 class AsistenciaFormacionAdmin(admin.ModelAdmin):
-    list_display = ('becario', 'get_estado', 'curso', 'calificacion', 'asistencia')
-    list_filter = ['curso']
+    list_display = ('becario', 'get_estado', 'curso', 'asistencia', 'calificacion')
+    list_filter = ['curso', 'becario__estado', 'asistencia']
 
     def get_estado(self, obj):
         return obj.becario.get_estado_display()
@@ -67,3 +67,4 @@ admin.site.register(ResponsableAula, ResponsableAulaAdmin)
 admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
 admin.site.register(Titulacion, TitulacionAdmin)
+admin.site.register(Convocatoria)

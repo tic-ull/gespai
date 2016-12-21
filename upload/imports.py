@@ -46,7 +46,7 @@ def import_csv_emplazamientos_plazas(csv_file):
         try:
             new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
-            new_emplazamiento = models.Emplazamiento(nombre=nombre)
+            new_emplazamiento = models.Emplazamiento(nombre=nombre.decode('utf-8'))
         # sobra? ya compruebo que el nombre no coincida, y Emplazamiento solo tiene
         # nombre e id automática
         try:

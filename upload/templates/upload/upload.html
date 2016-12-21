@@ -1,12 +1,17 @@
-<h1>Sistema de carga de datos</h1>
-<ul>
-    <li>
-        <a href="{% url 'upload:upload_becarios' %}">Becarios</a>
-    </li>
-    <li>
-        <a href="{% url 'upload:upload_plazas' %}">Plazas</a>
-    </li>
-    <li>
-        <a href="{% url 'upload:upload_formacion' %}">Planes de formación</a>
-    </li>
-</ul>
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+    <h1 class="page-header">Sistema de carga de datos</h1>
+    <ul>
+        <li>
+            <a href="{% url 'upload:upload_becarios' %}">Becarios</a>
+        </li>
+        <li>
+            <a href="{% url 'upload:upload_plazas' %}">Plazas</a>
+        </li>
+        <li>
+            <a href="{% url 'upload:upload_formacion' %}">Planes de formación</a>
+        </li>
+    </ul>
+</div>
+
+{% endblock content %}

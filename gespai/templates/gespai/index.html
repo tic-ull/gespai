@@ -1,0 +1,116 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="jumbotron">
+                        <h1>Gestión de Becarios</h1>
+                        <p class="lead">Aplicación web para la gestión de los becarios de aula de la Universidad de La Laguna.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="alert alert-info">
+                        {% if user.is_authenticated %}
+                        <p>Bienvenido, está identificado como {{ user.get_username }}.</p>
+                        {% else %}
+                        <p>Por favor, inicie sesión para usar la aplicación.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <hr/>
+    <div class="row">
+        <div class="col-lg-10 col-lg-push-2 portal-panels">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default panel-feature-success panel-success">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-user fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Inicio de Sesión</h4>
+                                    <p>Introduzca sus datos para acceder al sistema</p>
+                                    <!-- <a class="btn btn-success btn-sm" href="{% url 'cas_login' }"><i class="fa fa-angle-double-right"></i> Acceso ULL</a> -->
+                                    {% if not user.is_authenticated %}
+                                    <a class="btn btn-success btn-sm" href="{% url 'login' %}"><i class="fa fa-angle-double-right"></i> Inicie sesión</a>
+                                    {% else %}
+                                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="fa fa-angle-double-right"></i> Cerrar sesión</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if user.is_staff %}
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-pencil-square-o fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Sistema de cambios a becarios</h4>
+                                    <p>Solicite aquí cambios de plaza para los becarios</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'cambios:index' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {% if is_osl or user.is_superuser %}
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-database fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Subida de Datos</h4>
+                                    <p>Puede añadir datos a la BD a partir de un fichero CSV.</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'upload:index' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-2 col-lg-pull-10">
+            <div class="panel panel-default panel-ull color-7A3B7A">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-external-link"></i> Enlaces de inter&eacute;s</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="nav nav-pills nav-stacked">
+                        <li><a title="P&aacute;gina web ULL" href="http://www.ull.es/" target="_blank">P&aacute;gina web ULL</a></li>
+                        <li><a title="Normativa interna" href="http://www.ull.es/view/institucional/ull/Normativa_interna/es" target="_blank">Normativa interna</a></li>
+                        <li><a title="Convocatoria" href="http://www.ull.es/view/institucional/ull/Convocatorias_2/es" target="_blank">Convocatorias</a></li>
+                        <li><a title="SEGAI" href="http://www.segai.ull.es/" target="_blank">SEGAI</a></li>
+                        <li><a title="Actividades" href="http://www.ull.es/view/institucional/ull/Actividades_1/es" target="_blank">Actividades</a></li>
+                        <li><a title="Grupos e institutos de investigaci&oacute;n" href="http://www.ull.es/view/institucional/ull/Grupos_e_Institutos_de_investigacion/es" target="_blank">Grupos e insitutos de investigaci&oacute;n</a></li>
+                        <li><a title="OTRI" href="http://www.otri.ull.es/" target="_blank">OTRI</a></li>
+                        <li><a title="Clusters" href=http://www.ull.es/view/institucional/ull/Clusters/es " target="_blank ">Clusters</a></li>
+                        <li><a title="Comit&eacute; de &eacute;tica " href=http://www.ull.es/view/institucional/ull/Comite_de_Etica/es" target="_blank">Comit&eacute; de &eacute;tica</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

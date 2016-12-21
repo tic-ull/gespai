@@ -1,0 +1,32 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  {% if becario_list %}
+  <div class="content-section">
+      <h1 class="page-header">Becarios</h1>
+      <div class="table-responsive">
+          <table class="table table-striped">
+              <tr>
+                  <th>Orden</th>
+                  <th>Nombre</th>
+                  <th>Estado</th>
+                  <th>Plaza Asignada</th>
+              </tr>
+              {% for becario in object_list %}
+              <tr>
+                  <td>{{ becario.orden }}</td>
+                  <td><a href="{% url 'cambios:cambio' becario.orden %}">{{ becario }}</a></td>
+                  <td>{{ becario.get_estado_display }}</td>
+                  <td>{% if becario.plaza_asignada %}{{ becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</td>
+              </tr>
+              {% endfor %}
+          </table>
+      </div>
+  </div>
+  {% else %}
+  <div class="content-section">
+      <h1 class="page-header">Error</h1>
+      <div class="alert alert-danger">No hay becarios.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

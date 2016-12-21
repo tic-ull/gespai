@@ -1,0 +1,34 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  {% if object_list %}
+  <div class="content-section">
+      <h1 class="page-header">Cambios Pendientes</h1>
+      <div class="table-responsive">
+          <table class="table table-striped table-hover">
+              <tr>
+                  <th>Becario</th>
+                  <th>Plaza Cambio</th>
+                  <th>Fecha del Cambio</th>
+                  <th>Estado del Cambio</th>
+                  <th>Observaciones</th>
+              </tr>
+              {% for cambio in object_list %}
+              <tr onclick="window.location='{% url 'cambios:modificar' cambio.pk %}';">
+                  <td>{{ cambio.becario }}</td>
+                  <td>{% if cambio.plaza %}{{ cambio.plaza }}{% else %}Sin plaza{% endif %}</td>
+                  <td>{{ cambio.fecha_cambio }}</td>
+                  <td>{{ cambio.get_estado_cambio_display }}</td>
+                  <td>{{ cambio.observaciones }}</td>
+              </tr>
+              {% endfor %}
+          </table>
+      </div>
+  </div>
+  {% else %}
+  <div class="content-section">
+      <h1 class="page-header">Error</h1>
+      <div class="alert alert-danger">No hay cambios pendientes.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

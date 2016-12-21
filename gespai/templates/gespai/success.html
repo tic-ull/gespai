@@ -1,0 +1,8 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+    <div class="content-section">
+        <h1 class="page-header">{% if error %}Error{% else %}Éxito{% endif %}</h1>
+        <div class="alert {% if error %}alert-danger{% else %}alert-success{% endif %}">{{ mensaje }}</div>
+    </div>
+</div>
+{% endblock content %}
