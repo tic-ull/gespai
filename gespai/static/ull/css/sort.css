@@ -1,0 +1,4 @@
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {
+    font-family: FontAwesome;
+    content: " \f106\f107"
+}

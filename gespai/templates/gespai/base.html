@@ -22,10 +22,14 @@
     <link rel="shortcut icon" href="{% static '/ull/img/favicon.ico' %}">
 
     <link href="{% static '/ull/css/ull.min.css' %}" rel="stylesheet">
+    <link href="{% static '/ull/css/sort.css' %}" rel="stylesheet">
     <!--[if lt IE 9]><script src="{% static '/ull/js/ullie.min.js' %}"></script><![endif]-->
     <script src="{% static '/ull/js/ull.min.js' %}"></script>
     <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
     <script src="{% static '/js/notificaciones.js' %}"></script>
+    <script type="text/javascript" src="{% static '/js/sorttable.js' %}"></script>
+    <!-- Se indica al plugin JS que ordena las tablas que el idioma del texto a ordenar será español -->
+    <script>sorttable.sort_alpha = function(a,b) { return a[0].localeCompare(b[0], 'es'); }</script>
     {% register_notify_callbacks callbacks='generar_lista_notificaciones,fill_notification_badge' %}
 </head>
 
