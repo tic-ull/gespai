@@ -129,8 +129,6 @@ def aceptar_cambio(request, id_cambio):
                 hist.fecha_renuncia = cambio.fecha_cambio
             hist.full_clean()
             hist.save()
-            messages.success(request, "Becario modificado con éxito",
-                             extra_tags='alert alert-success')
             cambio.delete()
         except ValidationError as e:
             messages.error(request, e.messages[0], extra_tags='alert alert-danger')
