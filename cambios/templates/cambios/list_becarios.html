@@ -4,7 +4,7 @@
   <div class="content-section">
       <h1 class="page-header">Becarios</h1>
       <div class="table-responsive">
-          <table class="table table-striped">
+          <table class="table table-striped table-hover sortable">
               <tr>
                   <th>Orden</th>
                   <th>Nombre</th>
@@ -16,7 +16,11 @@
                   <td>{{ becario.orden }}</td>
                   <td><a href="{% url 'cambios:cambio' becario.orden %}">{{ becario }}</a></td>
                   <td>{{ becario.get_estado_display }}</td>
-                  <td>{% if becario.plaza_asignada %}{{ becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</td>
+                  {% if becario.plaza_asignada %}
+                  <td sorttable_customkey="{{ becario.plaza_asignada.id }}">{{ becario.plaza_asignada }}</td>
+                  {% else %}
+                  <td sorttable_customkey="9999">Sin plaza</td>
+                  {% endif %}
               </tr>
               {% endfor %}
           </table>
