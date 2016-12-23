@@ -114,7 +114,8 @@ def aceptar_cambio(request, id_cambio):
         try:
             becario.full_clean()
             becario.save()
-            # Tomando como mes de inicio de la convocatoria Octubre (según la convocatoria 16/17)
+            # El mes de inicio de la convocatoria es una constante que se declara
+            # en el fichero settings.py del proyecto.
             if cambio.fecha_cambio.month < settings.MES_INICIO_CONV:
                 conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year - 1,
                                                                     anyo_fin=cambio.fecha_cambio.year)

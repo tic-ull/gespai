@@ -28,7 +28,6 @@ def upload_becarios(request):
         if form.is_valid():
             errors = import_csv_becarios(request.FILES['csv_file_field'])
             if errors:
-                print('Errores en Becarios')
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
                     for key, value in error[1].error_dict.iteritems():
@@ -50,7 +49,6 @@ def upload_emplazamientos_plazas(request):
             errors = import_csv_emplazamientos_plazas(
                 request.FILES['csv_file_field'])
             if errors:
-                print('errores en Plazas y Centros')
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
                     for key, value in error[1].error_dict.iteritems():
@@ -71,7 +69,6 @@ def upload_plan_formacion(request):
         if form.is_valid():
             errors = import_csv_plan_formacion(request.FILES['csv_file_field'])
             if errors:
-                print('errores en PlanFormacion')
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
                     if isinstance(error[1], models.Becario.DoesNotExist) or isinstance(error[1], models.PlanFormacion.DoesNotExist):
