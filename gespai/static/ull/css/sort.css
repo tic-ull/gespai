@@ -2,3 +2,6 @@ table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sor
     font-family: FontAwesome;
     content: " \f106\f107"
 }
+tr.clickable {
+    cursor: pointer;
+}

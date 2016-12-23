@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from gestion import models
 import re
-import pdb
+
 
 def import_csv_becarios(csv_file):
     reader = csv.reader(csv_file)
@@ -47,8 +47,7 @@ def import_csv_emplazamientos_plazas(csv_file):
             new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
             new_emplazamiento = models.Emplazamiento(nombre=nombre.decode('utf-8'))
-        # sobra? ya compruebo que el nombre no coincida, y Emplazamiento solo tiene
-        # nombre e id automática
+        
         try:
             new_emplazamiento.full_clean()
             new_emplazamiento.save()
@@ -81,7 +80,6 @@ def import_csv_emplazamientos_plazas(csv_file):
                                          apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
                                          email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
                                          titulacion=new_titulacion)
-                print("Intento crear a: " + row[6])
                 try:
                     # Se asigna la plaza tras la creación del objeto para que se disparen
                     # las verificaciones del método save()
@@ -161,6 +159,7 @@ def find_nombre(rows, ind):
     else:
         return find_nombre(rows, (ind - 1))
 
+# Métodos para comprobar si los campos del CSV son válidos
 
 def is_dni(dni):
     if len(dni) == 8:
