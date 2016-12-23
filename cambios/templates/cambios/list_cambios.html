@@ -13,7 +13,7 @@
                   <th>Observaciones</th>
               </tr>
               {% for cambio in object_list %}
-              <tr onclick="window.location='{% url 'cambios:modificar' cambio.pk %}';">
+              <tr class="clickable" onclick="window.location='{% url 'cambios:modificar' cambio.pk %}';">
                   <td>{{ cambio.becario }}</td>
                   <td>{% if cambio.plaza %}{{ cambio.plaza }}{% else %}Sin plaza{% endif %}</td>
                   <td>{{ cambio.fecha_cambio }}</td>

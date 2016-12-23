@@ -7,9 +7,10 @@ from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
 
-# Create your models here.
 
 nombre_regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
+
+# Métodos para realizar validaciones
 
 def dni_validator(dni):
     if len(dni) == 8:
@@ -37,6 +38,7 @@ def codigo_tit_validator(codigo):
         params={'value': codigo},
     )
 
+# Modelos
 
 class Emplazamiento(models.Model):
     nombre = models.CharField(max_length=200)
@@ -93,13 +95,8 @@ class Becario(models.Model):
         self.__plaza_previa = self.plaza_asignada
 
     def save(self, *args, **kwargs):
-        '''if self.pk is not None:
-            # Si el objeto ya existe, guardo sus valores
-            prev = Becario.objects.get(pk=self.pk)'''
-        print(unicode(self.__plaza_previa) + ' - ' + unicode(self.plaza_asignada))
         # Si el becario pasa de no tener plaza a tener una
         if self.__plaza_previa == None and self.plaza_asignada != None:
-            print('se asigna plaza a ' + unicode(self))
             self.estado = 'A'
             # Se crea una entrada en HistorialBecarios para este becario en este año.
             # Si existe una entrada para este becario en este año no se hace nada.
@@ -111,7 +108,6 @@ class Becario(models.Model):
             HistorialBecarios.objects.get_or_create(dni_becario=self.dni, convocatoria=conv)
         # Si el becario pasa de tener una plaza a no tener una
         elif self.__plaza_previa != None and self.plaza_asignada == None:
-            print('se le quita la plaza a ' + unicode(self))
             self.estado = 'R'
             try:
                 hoy = datetime.datetime.now()
@@ -126,7 +122,7 @@ class Becario(models.Model):
                 # En el caso de que se intentase quitar una plaza a un becario
                 # que no esté en HistorialBecarios no se hace ninguna acción
                 # en la tabla HistorialBecarios
-                print('No existe entrada para el becario: ' + unicode(self) + ' en HistorialBecarios')
+                pass
         super(Becario, self).save(*args, **kwargs)
         self.__plaza_previa = self.plaza_asignada
 
