@@ -69,7 +69,7 @@ __Issues:__ https://github.com/srodmar/gespai/issues
 
   ___
 
-  La configuración del proyecto para su funcionamiento con Apache y MySQL se encuentra en la rama [apache](https://github.com/srodmar/gespai/tree/apache).
+  La configuración del proyecto para su funcionamiento con Apache y MySQL se encuentra en la rama [apache](https://github.com/tic-ull/gespai/tree/apache).
 
 ## Acceso a la aplicación
 
