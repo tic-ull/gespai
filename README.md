@@ -1,5 +1,7 @@
 # Aplicación para la gestión de los becarios de aulas de informática de la Universidad de La Laguna
 
+__Issues:__ https://github.com/srodmar/gespai/issues
+
 
 ## Requisitos
 
