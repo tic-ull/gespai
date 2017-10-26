@@ -7,4 +7,4 @@ class GestionConfig(AppConfig):
     name = 'gestion'
 
     def ready(self):
-        import signals
+        import django.db.models.signals
