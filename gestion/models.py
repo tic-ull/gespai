@@ -43,8 +43,8 @@ def codigo_tit_validator(codigo):
 class Emplazamiento(models.Model):
     nombre = models.CharField(max_length=200)
 
-    def __unicode__(self):
-        return unicode(self.nombre)
+    def __str__(self):
+        return self.nombre
 
 
 class Plaza(models.Model):
@@ -55,15 +55,15 @@ class Plaza(models.Model):
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
-    def __unicode__(self):
-        return 'Plaza #' + unicode(self.pk) + ': ' + unicode(self.emplazamiento) + ' - ' + self.get_horario_display()
+    def __str__(self):
+        return 'Plaza #' + self.pk + ': ' + self.emplazamiento + ' - ' + self.get_horario_display()
 
 class Titulacion(models.Model):
     codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
     nombre = models.CharField(max_length=200)
 
-    def __unicode__(self):
-        return unicode(self.nombre)
+    def __str__(self):
+        return self.nombre
 
 class Becario(models.Model):
     ESTADOS = (
@@ -126,13 +126,13 @@ class Becario(models.Model):
         super(Becario, self).save(*args, **kwargs)
         self.__plaza_previa = self.plaza_asignada
 
-    def __unicode__(self):
+    def __str__(self):
         context = {
             'nombre': self.nombre,
             'apellido1': self.apellido1,
             'apellido2': self.apellido2,
         }
-        return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+        return '%(nombre)s %(apellido1)s %(apellido2)s' % context
 
 class PreferenciasBecario(models.Model):
 
@@ -144,8 +144,8 @@ class PreferenciasBecario(models.Model):
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
     num_orden = models.PositiveSmallIntegerField()
 
-    def __unicode__(self):
-        return unicode(self.becario) + '(' + unicode(self.num_orden) + ') - ' + unicode(self.plaza)
+    def __str__(self):
+        return (self.becario) + '(' + (self.num_orden) + ') - ' + (self.plaza)
 
 
 class PlanFormacion(models.Model):
@@ -156,9 +156,9 @@ class PlanFormacion(models.Model):
     fecha_imparticion = models.DateTimeField(null=True, blank=True)
     asistentes = models.ManyToManyField(Becario, through='AsistenciaFormacion')
 
-    def __unicode__(self):
+    def __str__(self):
         if self.fecha_imparticion:
-            return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+            return self.nombre_curso + ' - ' + (self.fecha_imparticion.date().strftime('%d/%m/%Y'))
         return self.nombre_curso
 
 
@@ -173,8 +173,8 @@ class AsistenciaFormacion(models.Model):
         validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
     asistencia = models.BooleanField(default=False)
 
-    def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.curso)
+    def __str__(self):
+        return (self.becario) + ' - ' + (self.curso)
 
 class ResponsableAula(models.Model):
     nombre = models.CharField(max_length=200,
@@ -188,13 +188,13 @@ class ResponsableAula(models.Model):
         validators=[telefono_validator], blank=True, null=True)
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 
-    def __unicode__(self):
+    def __str__(self):
         context = {
             'nombre': self.nombre,
             'apellido1': self.apellido1,
             'apellido2': self.apellido2,
         }
-        return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+        return '%(nombre)s %(apellido1)s %(apellido2)s' % context
 
 class CambiosPendientes(models.Model):
 
@@ -221,11 +221,11 @@ class CambiosPendientes(models.Model):
             if entradas_historial >= 5:
                 raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')
 
-    def __unicode__(self):
+    def __str__(self):
         if self.fecha_cambio:
-            return unicode(self.becario) + ' - ' + self.get_estado_cambio_display() +\
-            ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
-        return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
+            return (self.becario) + ' - ' + self.get_estado_cambio_display() +\
+            ' - ' + (self.fecha_cambio.strftime('%d/%m/%Y'))
+        return (self.becario) + ' - ' + self.get_estado_cambio_display()
 
 class Convocatoria(models.Model):
     class Meta:
@@ -240,8 +240,8 @@ class Convocatoria(models.Model):
         if dif != 1:
             raise ValidationError('Convocatoria no válida')
 
-    def __unicode__(self):
-        return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
+    def __str__(self):
+        return (self.anyo_inicio) + '/' + (self.anyo_fin)
 
 class HistorialBecarios(models.Model):
 
@@ -259,5 +259,5 @@ class HistorialBecarios(models.Model):
         if entradas_historial >= 5:
             raise ValidationError('Este becario ya ha sido asignado en 5 convocatorias.')
 
-    def __unicode__(self):
-        return unicode(self.dni_becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
+    def __str__(self):
+        return (self.dni_becario) + ' - ' + (self.fecha_asignacion.strftime('%d/%m/%Y'))
