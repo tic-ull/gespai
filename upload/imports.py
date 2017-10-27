@@ -1,36 +1,44 @@
 # coding=utf-8
+
 import csv
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from gestion import models
 import re
-
+from io import TextIOWrapper
 
 def import_csv_becarios(csv_file):
-    reader = csv.reader(csv_file)
+    csvf = TextIOWrapper(csv_file, encoding="utf-8")
+    reader = csv.reader(csvf)
     errors = []
 
     for index, row in enumerate(reader):
-
         if is_codigo_tit(row[10]):
             new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[10])
-            new_titulacion.nombre = row[11].decode('utf-8')
+            new_titulacion.nombre = row[11]
             try:
                 new_titulacion.full_clean()
                 new_titulacion.save()
             except ValidationError as e:
                 errors.append((index + 1, e))
 
-        new_becario = models.Becario(orden=row[1],estado=row[2][:1], dni=row[3], apellido1=row[4].decode('utf-8'),
-                         apellido2=row[5].decode('utf-8'), nombre=row[6].decode('utf-8'), email=row[7],
-                         telefono=row[8] or None, titulacion=new_titulacion, permisos=has_permisos(row[9]))
-        try:
-            new_becario.full_clean()
-            new_becario.save()
-        except ValidationError as e:
-            errors.append((index + 1, e))
-    if errors:
-        return errors
+            new_becario = models.Becario(orden=row[1],
+                                         estado=row[2][:1], # NOTE ¿Por qué?
+                                         dni=row[3],
+                                         apellido1=row[4],
+                                         apellido2=row[5],
+                                         nombre=row[6],
+                                         email=row[7],
+                                         telefono=row[8] or None,
+                                         titulacion=new_titulacion,
+                                         permisos=has_permisos(row[9]))
+            try:
+                new_becario.full_clean()
+                new_becario.save()
+            except ValidationError as e:
+                errors.append((index + 1, e))
+
+    return errors
 
 
 def import_csv_emplazamientos_plazas(csv_file):

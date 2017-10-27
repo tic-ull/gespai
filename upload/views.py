@@ -26,13 +26,13 @@ def upload_becarios(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            errors = import_csv_becarios(request.FILES['csv_file_field'])
+            errors = import_csv_becarios(request.FILES['csv_file_field'].file)
             if errors:
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
-                    for key, value in error[1].error_dict.iteritems():
+                    for key, value in error[1].error_dict.items():
                         error_message += key + ': ' + \
-                            unicode(value[0].messages[0]) + ' '
+                            value[0].messages[0] + ' '
                     messages.error(request, error_message)
                 return HttpResponseRedirect('/upload/becarios')
             return HttpResponseRedirect('/upload')
@@ -51,9 +51,9 @@ def upload_emplazamientos_plazas(request):
             if errors:
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
-                    for key, value in error[1].error_dict.iteritems():
+                    for key, value in error[1].error_dict.items():
                         error_message += key + ': ' + \
-                            unicode(value[0].messages[0]) + ' '
+                            value[0].messages[0] + ' '
                     messages.error(request, error_message)
                 return HttpResponseRedirect('/upload/plazas')
             return HttpResponseRedirect('/upload')
@@ -74,9 +74,9 @@ def upload_plan_formacion(request):
                     if isinstance(error[1], models.Becario.DoesNotExist) or isinstance(error[1], models.PlanFormacion.DoesNotExist):
                         error_message += error[1].message
                     else:
-                        for key, value in error[1].error_dict.iteritems():
+                        for key, value in error[1].error_dict.items():
                             error_message += key + ': ' + \
-                                unicode(value[0].messages[0]) + ' '
+                                value[0].messages[0] + ' '
                     messages.error(request, error_message)
                 return HttpResponseRedirect('/upload/formacion')
             return HttpResponseRedirect('/upload')
