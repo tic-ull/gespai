@@ -7,4 +7,4 @@ class GestionConfig(AppConfig):
     name = 'gestion'
 
     def ready(self):
-        from . import signals
+        from gestion import signals
