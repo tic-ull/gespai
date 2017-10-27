@@ -214,9 +214,8 @@ class CambiosPendientes(models.Model):
 
     def __str__(self):
         if self.fecha_cambio:
-            return (self.becario) + " - " + self.get_estado_cambio_display() +\
-            " - " + (self.fecha_cambio.strftime("%d/%m/%Y"))
-        return (self.becario) + " - " + self.get_estado_cambio_display()
+            return "{0.becario} - {1} - {fecha}".format(self, get_estado_cambio_display(), fecha=fecha_cambio.strftime("%d/%m/%Y"))
+        return "{0.becario} - {1}".format(self, get_estado_cambio_display())
 
 class Convocatoria(models.Model):
     class Meta:
