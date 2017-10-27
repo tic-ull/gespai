@@ -46,8 +46,7 @@ def upload_emplazamientos_plazas(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            errors = import_csv_emplazamientos_plazas(
-                request.FILES['csv_file_field'])
+            errors = import_csv_emplazamientos_plazas(request.FILES['csv_file_field'].file)
             if errors:
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '
@@ -67,7 +66,7 @@ def upload_plan_formacion(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            errors = import_csv_plan_formacion(request.FILES['csv_file_field'])
+            errors = import_csv_plan_formacion(request.FILES['csv_file_field'].file)
             if errors:
                 for error in errors:
                     error_message = 'Error en linea ' + str(error[0]) + ': '

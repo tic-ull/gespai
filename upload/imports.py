@@ -23,7 +23,7 @@ def import_csv_becarios(csv_file):
                 errors.append((index + 1, e))
 
             new_becario = models.Becario(orden=row[1],
-                                         estado=row[2][:1], # NOTE ¿Por qué?
+                                         estado=row[2][0], # NOTE ¿Por qué?
                                          dni=row[3],
                                          apellido1=row[4],
                                          apellido2=row[5],
@@ -42,11 +42,14 @@ def import_csv_becarios(csv_file):
 
 
 def import_csv_emplazamientos_plazas(csv_file):
-    reader = list(csv.reader(csv_file))
+    csvf = TextIOWrapper(csv_file, encoding="utf-8")
+    reader = list(csv.reader(csvf))
     errors = []
 
     for index, row in enumerate(reader):
 
+        # XXX Hay que ignorar la primera línea para no causar problemas
+        if index == 0: continue
         nombre = find_nombre(reader, index)
         # Se comprueba si existe ya un Emplazamiento con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
@@ -54,14 +57,13 @@ def import_csv_emplazamientos_plazas(csv_file):
         try:
             new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
-            new_emplazamiento = models.Emplazamiento(nombre=nombre.decode('utf-8'))
+            new_emplazamiento = models.Emplazamiento(nombre=nombre)
         
         try:
             new_emplazamiento.full_clean()
             new_emplazamiento.save()
         except ValidationError as e:
-            errors.append("Error en linea " +
-                          unicode(index + 1) + ": " + unicode(e.error_dict))
+            errors.append("Error en linea " + (index + 1) + ": " + e.error_dict)
         new_plaza = models.Plaza(pk=row[0], horario=row[1], emplazamiento=new_emplazamiento)
 
         try:
@@ -84,9 +86,14 @@ def import_csv_emplazamientos_plazas(csv_file):
                     except ObjectDoesNotExist:
                         new_titulacion = models.Titulacion(codigo=row[14], nombre='Titulación desconocida')
                         new_titulacion.save()
-                becario = models.Becario(orden=row[5], dni=row[6], apellido1=row[7].decode('utf-8'),
-                                         apellido2=row[8].decode('utf-8'), nombre=row[9].decode('utf-8'),
-                                         email=row[11], telefono=row[12] or None, permisos=has_permisos(row[13]),
+                becario = models.Becario(orden=row[5],
+                                         dni=row[6],
+                                         apellido1=row[7],
+                                         apellido2=row[8],
+                                         nombre=row[9],
+                                         email=row[11],
+                                         telefono=row[12] or None,
+                                         permisos=has_permisos(row[13]),
                                          titulacion=new_titulacion)
                 try:
                     # Se asigna la plaza tras la creación del objeto para que se disparen
@@ -97,11 +104,11 @@ def import_csv_emplazamientos_plazas(csv_file):
                 except ValidationError as e:
                     errors.append((index + 1, e))
 
-    if errors:
-        return errors
+    return errors
 
 def import_csv_plan_formacion(csv_file):
-    reader = list(csv.reader(csv_file))
+    csvf = TextIOWrapper(csv_file, encoding="utf-8")
+    reader = csv.reader(csvf)
     errors = []
 
     # Se recorre todo el fichero CSV para crear los cursos
@@ -155,8 +162,7 @@ def import_csv_plan_formacion(csv_file):
             except ObjectDoesNotExist as e:
                 errors.append((index + 1, e))
 
-    if errors:
-        return errors
+    return errors
 
 
 # Método recursivo para encontrar el nombre de Emplazamiento en campos vacíos (porque
@@ -169,28 +175,19 @@ def find_nombre(rows, ind):
 
 # Métodos para comprobar si los campos del CSV son válidos
 
+# TODO:2017-10-27:jeplasenciap:(#1):
+# Esto debería hacerse con el validador
 def is_dni(dni):
     if len(dni) == 8:
         if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
             return True
     return False
 
-
 def is_codigo_tit(cod):
-    if len(cod) == 4:
-        if cod[0].isalpha and cod[1:].isdigit():
-            return True
-    return False
-
+    return len(cod) == 4 and cod[0].isalpha() and cod[1:].isdigit()
 
 def has_permisos(perm):
-    if perm == 'Sí':
-        return True
-    else:
-        return False
+    return perm == "Sí"
 
 def is_codigo_actividad(cod):
-    if len(cod) > 0 and len(cod) <= 3:
-        if cod[0] == 'A':
-            return True
-    return False
+    return len(cod) > 0 and len(cod) <= 3 and cod[0] == 'A'
