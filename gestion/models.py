@@ -140,7 +140,6 @@ class PreferenciasBecario(models.Model):
     num_orden = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return (self.becario) + '(' + (self.num_orden) + ') - ' + (self.plaza)
         return "{0.becario}({0.num_orden}) - {0.plaza}".format(self)
 
 
@@ -154,7 +153,7 @@ class PlanFormacion(models.Model):
 
     def __str__(self):
         if self.fecha_imparticion:
-            return self.nombre_curso + ' - ' + (self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+            return "{0.nombre_curso} - {fecha}".format(self, fecha=fecha_imparticion.date().strftime('%d/%m/%Y'))
         return self.nombre_curso
 
 
@@ -214,8 +213,8 @@ class CambiosPendientes(models.Model):
 
     def __str__(self):
         if self.fecha_cambio:
-            return "{0.becario} - {1} - {fecha}".format(self, get_estado_cambio_display(), fecha=fecha_cambio.strftime("%d/%m/%Y"))
-        return "{0.becario} - {1}".format(self, get_estado_cambio_display())
+            return "{0.becario} - {1} - {fecha}".format(self, self.get_estado_cambio_display(), fecha=self.fecha_cambio.strftime("%d/%m/%Y"))
+        return "{0.becario} - {1}".format(self, self.get_estado_cambio_display())
 
 class Convocatoria(models.Model):
     class Meta:
@@ -231,7 +230,7 @@ class Convocatoria(models.Model):
             raise ValidationError("Convocatoria no válida")
 
     def __str__(self):
-        return (self.anyo_inicio) + "/" + (self.anyo_fin)
+        return "{0.anyo_inicio}/{0.anyo_fin}".format(self)
 
 class HistorialBecarios(models.Model):
 
@@ -250,4 +249,4 @@ class HistorialBecarios(models.Model):
             raise ValidationError("Este becario ya ha sido asignado en 5 convocatorias.")
 
     def __str__(self):
-        return (self.dni_becario) + " - " + (self.fecha_asignacion.strftime("%d/%m/%Y"))
+        return "(0.dni_becario) - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
