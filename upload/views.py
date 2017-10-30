@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext as _
 
 from gestion import models
 from . import forms

@@ -2,6 +2,7 @@
 
 import csv
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.utils.translation import ugettext as _
 
 from gestion import models
 import re
@@ -162,6 +163,7 @@ def import_csv_plan_formacion(csv_file):
             except ObjectDoesNotExist as e:
                 errors.append((index + 1, e))
 
+    raise ValidationError(errors)
     return errors
 
 

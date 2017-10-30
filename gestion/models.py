@@ -1,42 +1,17 @@
 # coding=utf-8
-from __future__ import unicode_literals
+
 import datetime
 
-from django.db import models
-from django.core import validators
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
+from django.core import validators
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
+from gespai import validation
 
-nombre_regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
-
-# Métodos para realizar validaciones
-
-def dni_validator(dni):
-    if len(dni) == 8:
-        if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
-            return
-    raise ValidationError(
-        _('Introduzca un DNI válido'),
-        params={'value': dni},
-    )
-
-
-def telefono_validator(telefono):
-    if len(str(telefono)) != 9:
-        raise ValidationError(
-            _('Introduzca un número de teléfono válido'),
-            params={'value': telefono},
-        )
-
-def codigo_tit_validator(codigo):
-    if len(codigo) == 4:
-        if codigo[0].isalpha and codigo[1:].isdigit():
-            return
-    raise ValidationError(
-        _('Introduzca un codigo de titulacion valido'),
-        params={'value': codigo},
-    )
+_NOMBRE_REGEX = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
 
 # Modelos
 
@@ -59,13 +34,17 @@ class Plaza(models.Model):
         return "Plaza #{0.pk}: {0.emplazamiento} - {0.horario}".format(self)
 
 class Titulacion(models.Model):
-    codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
+    codigo = models.CharField(max_length=4, primary_key=True, validators=[validation.codigo_tit_validator])
     nombre = models.CharField(max_length=200)
 
     def __str__(self):
         return self.nombre
 
 class Becario(models.Model):
+
+    _NOMBRE_MAX_LENGTH = 200
+    _DNI_MAX_LENGTH = 9
+
     ESTADOS = (
         ("A", "Asignado"),
         ("S", "Suplente"),
@@ -73,20 +52,27 @@ class Becario(models.Model):
         ("E", "Excluido"),
         ("N", "No asignado")
     )
-    nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(nombre_regex)])
-    apellido1 = models.CharField(max_length=200)
-    apellido2 = models.CharField(max_length=200, blank=True)
+    nombre = models.CharField(
+             max_length=_NOMBRE_MAX_LENGTH,
+             validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+    apellido1 = models.CharField(
+                max_length=_NOMBRE_MAX_LENGTH,
+                validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+    apellido2 = models.CharField(
+                max_length=_NOMBRE_MAX_LENGTH,
+                blank=True,
+                validators=[validators.RegexValidator(_NOMBRE_REGEX)])
     orden = models.PositiveIntegerField(unique=True)
-    dni = models.CharField(primary_key=True, validators=[dni_validator],
-                           max_length=8)
+    dni = models.CharField(primary_key=True,
+                           validators=[validation.dni_validator],
+                           max_length=_DNI_MAX_LENGTH)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.ForeignKey(Titulacion, on_delete=models.PROTECT)
-    plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
+    plaza_asignada = models.OneToOneField(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True, unique=True)
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
-        validators=[telefono_validator], blank=True, null=True)
+        validators=[validation.telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
     observaciones = models.TextField(blank=True)
 
@@ -153,7 +139,7 @@ class PlanFormacion(models.Model):
 
     def __str__(self):
         if self.fecha_imparticion:
-            return "{0.nombre_curso} - {fecha}".format(self, fecha=fecha_imparticion.date().strftime('%d/%m/%Y'))
+            return "{0.nombre_curso} - {fecha}".format(self, fecha=self.fecha_imparticion.date().strftime('%d/%m/%Y'))
         return self.nombre_curso
 
 
@@ -173,14 +159,14 @@ class AsistenciaFormacion(models.Model):
 
 class ResponsableAula(models.Model):
     nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(nombre_regex)])
+                              validators=[validators.RegexValidator(_NOMBRE_REGEX)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
-    dni = models.CharField(primary_key=True, validators=[dni_validator],
+    dni = models.CharField(primary_key=True, validators=[validation.dni_validator],
                            max_length=8)
     email = models.EmailField(unique=True)
     telefono = models.PositiveIntegerField(
-        validators=[telefono_validator], blank=True, null=True)
+        validators=[validation.telefono_validator], blank=True, null=True)
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -217,17 +203,22 @@ class CambiosPendientes(models.Model):
         return "{0.becario} - {1}".format(self, self.get_estado_cambio_display())
 
 class Convocatoria(models.Model):
+
+    _ANYO_COMIENZO = 2012
+    _ANYO_CHOICES = [(r, r) for r in range(_ANYO_COMIENZO, datetime.date.today().year + 20)]
+
     class Meta:
         unique_together = (("anyo_inicio", "anyo_fin"))
-    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 20)]
 
-    anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
-    anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
+    anyo_inicio = models.IntegerField(choices=_ANYO_CHOICES, default=datetime.datetime.now().year)
+    anyo_fin = models.IntegerField(choices=_ANYO_CHOICES, default=datetime.datetime.now().year + 1)
 
     def clean(self):
         dif = self.anyo_fin - self.anyo_inicio
         if dif != 1:
-            raise ValidationError("Convocatoria no válida")
+            raise ValidationError(
+                _("Convocatoria no válida"),
+                params={"convocatoria": self.convocatoria})
 
     def __str__(self):
         return "{0.anyo_inicio}/{0.anyo_fin}".format(self)
@@ -238,7 +229,7 @@ class HistorialBecarios(models.Model):
         unique_together = (("dni_becario", "convocatoria"))
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
-    dni_becario = models.CharField(validators=[dni_validator],max_length=8)
+    dni_becario = models.CharField(validators=[validation.dni_validator],max_length=8)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.PROTECT)
     fecha_asignacion = models.DateField(auto_now_add=True)
     fecha_renuncia = models.DateField(null=True, blank=True)
