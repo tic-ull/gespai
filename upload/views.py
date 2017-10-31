@@ -1,12 +1,13 @@
-from django.shortcuts import redirect, render
-from django.views.generic import TemplateView
-from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
+from django.views.generic import TemplateView
 
 from gestion import models
+
 from . import forms
 from .imports import import_csv_becarios, import_csv_emplazamientos_plazas, import_csv_plan_formacion
 

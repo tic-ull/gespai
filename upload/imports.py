@@ -1,12 +1,14 @@
 # coding=utf-8
 
 import csv
+from io import TextIOWrapper
+import re
+
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 
 from gestion import models
-import re
-from io import TextIOWrapper
+from gespai.validation import is_dni
 
 def import_csv_becarios(csv_file):
     csvf = TextIOWrapper(csv_file, encoding="utf-8")
@@ -176,14 +178,6 @@ def find_nombre(rows, ind):
         return find_nombre(rows, (ind - 1))
 
 # Métodos para comprobar si los campos del CSV son válidos
-
-# TODO:2017-10-27:jeplasenciap:(#1):
-# Esto debería hacerse con el validador
-def is_dni(dni):
-    if len(dni) == 8:
-        if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
-            return True
-    return False
 
 def is_codigo_tit(cod):
     return len(cod) == 4 and cod[0].isalpha() and cod[1:].isdigit()
