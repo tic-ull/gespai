@@ -74,7 +74,7 @@ class Becario(models.Model):
     plaza_asignada = models.OneToOneField(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True, unique=True)
     email = models.EmailField(unique=True)
-    telefono = models.PositiveIntegerField(
+    telefono = models.CharField(max_length=15,
         validators=[validation.telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
     observaciones = models.TextField(blank=True)
@@ -168,7 +168,7 @@ class ResponsableAula(models.Model):
     dni = models.CharField(primary_key=True, validators=[validation.dni_validator],
                            max_length=8)
     email = models.EmailField(unique=True)
-    telefono = models.PositiveIntegerField(
+    telefono = models.CharField(max_length=15,
         validators=[validation.telefono_validator], blank=True, null=True)
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 

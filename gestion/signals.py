@@ -21,7 +21,7 @@ def cambio_estado(sender, **kwargs):
         pass
     if instance.plaza:
         desc = 'Tipo de cambio: ' + instance.get_estado_cambio_display() + '\nPlaza asociada al cambio: ' + \
-            unicode(instance.plaza) + '\nFecha del cambio: ' + \
+            instance.plaza + '\nFecha del cambio: ' + \
             instance.fecha_cambio.strftime('%d/%m/%Y')
     else:
         desc = 'Tipo de cambio: ' + instance.get_estado_cambio_display() + '\nFecha del cambio: ' + \
