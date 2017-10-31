@@ -41,12 +41,3 @@ def telefono_validator(telefono):
             _("Teléfono no válido: %(telefono)"),
             params = {"telefono": telefono}
         )
-
-def codigo_tit_validator(codigo):
-    if len(codigo) == 4 and codigo[0].isalpha and codigo[1:].isdigit():
-            return
-    else:
-        raise ValidationError(
-            _('Introduzca un codigo de titulacion valido'),
-            params={'value': codigo},
-        )

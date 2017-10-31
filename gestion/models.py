@@ -3,8 +3,9 @@
 import datetime
 
 from django.conf import settings
-from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MinValueValidator, MaxValueValidator, \
+    RegexValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -34,7 +35,9 @@ class Plaza(models.Model):
         return "Plaza #{0.pk}: {0.emplazamiento} - {0.horario}".format(self)
 
 class Titulacion(models.Model):
-    codigo = models.CharField(max_length=4, primary_key=True, validators=[validation.codigo_tit_validator])
+    _TITULACION_PATRON_REGEX = r"[GM]\d{3}"
+
+    codigo = models.CharField(max_length=4, primary_key=True, validators=[RegexValidator(_TITULACION_PATRON_REGEX)])
     nombre = models.CharField(max_length=200)
 
     def __str__(self):
@@ -54,14 +57,14 @@ class Becario(models.Model):
     )
     nombre = models.CharField(
              max_length=_NOMBRE_MAX_LENGTH,
-             validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+             validators=[RegexValidator(_NOMBRE_REGEX)])
     apellido1 = models.CharField(
                 max_length=_NOMBRE_MAX_LENGTH,
-                validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+                validators=[RegexValidator(_NOMBRE_REGEX)])
     apellido2 = models.CharField(
                 max_length=_NOMBRE_MAX_LENGTH,
                 blank=True,
-                validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+                validators=[RegexValidator(_NOMBRE_REGEX)])
     orden = models.PositiveIntegerField(unique=True)
     dni = models.CharField(primary_key=True,
                            validators=[validation.dni_validator],
@@ -151,7 +154,7 @@ class AsistenciaFormacion(models.Model):
     curso = models.ForeignKey(PlanFormacion, on_delete=models.CASCADE)
     calificacion = models.DecimalField(
         max_digits=4, decimal_places=2, null=True, blank=True, default=None,
-        validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
+        validators=[MinValueValidator(0.00), MaxValueValidator(10.00)])
     asistencia = models.BooleanField(default=False)
 
     def __str__(self):
@@ -159,7 +162,7 @@ class AsistenciaFormacion(models.Model):
 
 class ResponsableAula(models.Model):
     nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(_NOMBRE_REGEX)])
+                              validators=[RegexValidator(_NOMBRE_REGEX)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
     dni = models.CharField(primary_key=True, validators=[validation.dni_validator],
