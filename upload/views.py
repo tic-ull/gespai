@@ -1,8 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
@@ -35,8 +34,8 @@ def upload_becarios(request):
                         # error_message += "{0}: {1}".format(key, value)
                         error_message += ";^)"
                     messages.error(request, error_message)
-                return HttpResponseRedirect('/upload/becarios')
-            return HttpResponseRedirect('/upload')
+                return redirect('/upload/becarios')
+            return redirect('/upload')
     else:
         form = forms.UploadCSVForm()
     return render(request, 'upload/upload_form.html', {'form': form})
@@ -55,8 +54,8 @@ def upload_emplazamientos_plazas(request):
                         error_message += key + ': ' + \
                             value[0].messages[0] + ' '
                     messages.error(request, error_message)
-                return HttpResponseRedirect('/upload/plazas')
-            return HttpResponseRedirect('/upload')
+                return redirect('/upload/plazas')
+            return redirect('/upload')
     else:
         form = forms.UploadCSVForm()
     return render(request, 'upload/upload_form.html', {'form': form})
@@ -78,8 +77,8 @@ def upload_plan_formacion(request):
                             error_message += key + ': ' + \
                                 value[0].messages[0] + ' '
                     messages.error(request, error_message)
-                return HttpResponseRedirect('/upload/formacion')
-            return HttpResponseRedirect('/upload')
+                return redirect('/upload/formacion')
+            return redirect('/upload')
     else:
         form = forms.UploadCSVForm()
     return render(request, 'upload/upload_form.html', {'form': form})
