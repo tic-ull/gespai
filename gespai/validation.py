@@ -11,7 +11,7 @@ def dni_validator(dni):
         return
     else:
         raise ValidationError(
-            _("DNI o NIE no válido: %(dni)"),
+            _("DNI o NIE no válido: %(dni)s"),
             params = {"dni": dni}
         )
 
@@ -45,6 +45,6 @@ def telefono_validator(telefono):
         return 
     else:
         raise ValidationError(
-            _("Teléfono no válido: %(telefono)"),
+            _("Teléfono no válido: %(telefono)s"),
             params = {"telefono": telefono}
         )
