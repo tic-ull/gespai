@@ -30,7 +30,7 @@ def upload_becarios(request):
             errors = import_csv_becarios(request.FILES['csv_file_field'].file)
             if errors:
                 for error in errors:
-                    error_message = "Error en linea {}: {}".format(str(error[0]), error)
+                    error_message = "Error en linea {}: {}".format(str(error[0]), " ".join("{}: {}".format(i, j[0]) for (i, j) in error[1]))
                     messages.error(request, error_message)
                 return redirect('/upload/becarios')
             return redirect('/upload')
