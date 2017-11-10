@@ -35,7 +35,7 @@ class Plaza(models.Model):
         return "Plaza #{0.pk}: {0.emplazamiento} - {0.horario}".format(self)
 
 class Titulacion(models.Model):
-    _TITULACION_PATRON_REGEX = r"[GM]\d{3}"
+    _TITULACION_PATRON_REGEX = r"[GMD]\d{3}"
 
     codigo = models.CharField(max_length=4, primary_key=True, validators=[RegexValidator(_TITULACION_PATRON_REGEX)])
     nombre = models.CharField(max_length=200)
