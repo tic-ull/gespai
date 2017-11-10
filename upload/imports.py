@@ -26,7 +26,7 @@ def import_csv_becarios(csv_file):
                 errors.append((index + 1, e))
 
             new_becario = models.Becario(orden=row[1],
-                                         estado=row[2][0], # NOTE ¿Por qué?
+                                         estado=row[2][0],
                                          dni=row[3],
                                          apellido1=row[4],
                                          apellido2=row[5],
