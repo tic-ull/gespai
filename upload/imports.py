@@ -16,16 +16,12 @@ def import_csv_becarios(csv_file):
     errors = []
 
     for index, row in enumerate(reader):
-        if is_codigo_tit(row[10]):
-            new_titulacion, c = models.Titulacion.objects.get_or_create(codigo=row[10])
-            new_titulacion.nombre = row[11]
-            try:
-                new_titulacion.full_clean()
-                new_titulacion.save()
-            except ValidationError as e:
-                errors.append((index + 1, e))
+            nueva_titulacion, titulacion_existe = models.Titulacion.objects.get_or_create(codigo=row[10], nombre=row[11])
+            if not titulacion_existe:
+                nueva_titulacion.full_clean()
+                nueva_titulacion.save()
 
-            new_becario = models.Becario(orden=row[1],
+            nuevo_becario = models.Becario(orden=row[1],
                                          estado=row[2][0],
                                          dni=row[3],
                                          apellido1=row[4],
@@ -33,11 +29,11 @@ def import_csv_becarios(csv_file):
                                          nombre=row[6],
                                          email=row[7],
                                          telefono=row[8] or None,
-                                         titulacion=new_titulacion,
+                                         titulacion=nueva_titulacion,
                                          permisos=has_permisos(row[9]))
             try:
-                new_becario.full_clean()
-                new_becario.save()
+                nuevo_becario.full_clean()
+                nuevo_becario.save()
             except ValidationError as e:
                 errors.append((index + 1, e))
 
@@ -53,7 +49,13 @@ def import_csv_emplazamientos_plazas(csv_file):
 
         # XXX Hay que ignorar la primera línea para no causar problemas
         if index == 0: continue
+
         nombre = find_nombre(reader, index)
+
+        # NOTE El siguiente comentario es plenamente falso, get_or_create devuelve un
+        # tupla de la forma (objeto_creado, bool_si_existe), lo único que hay que hacer
+        # es validar el objeto creado si no existía previamente y guardarlo.
+
         # Se comprueba si existe ya un Emplazamiento con el mismo nombre. Si no existe,
         # se crea. No se utiliza get_or_create ya que es necesario hacer validación
         # de los campos mediante full_clean.
