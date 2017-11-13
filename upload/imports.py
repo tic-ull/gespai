@@ -16,21 +16,24 @@ def import_csv_becarios(csv_file):
     errors = []
 
     for index, row in enumerate(reader):
-            nueva_titulacion, titulacion_existe = models.Titulacion.objects.get_or_create(codigo=row[10], nombre=row[11])
-            if not titulacion_existe:
+            try:
+                nueva_titulacion = models.Titulacion.objects.get(codigo=row[10], nombre=row[11])
+            except Titulacion.DoesNotExist:
+                nueva_titulacion = models.Titulacion(codigo=row[10], nombre=row[11])
                 nueva_titulacion.full_clean()
                 nueva_titulacion.save()
 
-            nuevo_becario = models.Becario(orden=row[1],
-                                         estado=row[2][0],
-                                         dni=row[3],
-                                         apellido1=row[4],
-                                         apellido2=row[5],
-                                         nombre=row[6],
-                                         email=row[7],
-                                         telefono=row[8] or None,
-                                         titulacion=nueva_titulacion,
-                                         permisos=has_permisos(row[9]))
+            nuevo_becario = models.Becario(
+                orden=row[1],
+                 estado=row[2][0],
+                 dni=row[3],
+                 apellido1=row[4],
+                 apellido2=row[5],
+                 nombre=row[6],
+                 email=row[7],
+                 telefono=row[8] or None,
+                 titulacion=nueva_titulacion,
+                 permisos=has_permisos(row[9]))
             try:
                 nuevo_becario.full_clean()
                 nuevo_becario.save()
