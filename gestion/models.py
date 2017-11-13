@@ -228,18 +228,21 @@ class Convocatoria(models.Model):
 
 class HistorialBecarios(models.Model):
 
+    _DNI_MAX_LENGTH = 9
+    _MAX_CONVOCATORIAS = 5
+
     class Meta:
         unique_together = (("dni_becario", "convocatoria"))
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
-    dni_becario = models.CharField(validators=[validation.dni_validator],max_length=8)
+    dni_becario = models.CharField(validators=[validation.dni_validator], max_length=_DNI_MAX_LENGTH)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.PROTECT)
     fecha_asignacion = models.DateField(auto_now_add=True)
     fecha_renuncia = models.DateField(null=True, blank=True)
 
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
-        if entradas_historial >= 5:
+        if entradas_historial >= _MAX_CONVOCATORIAS:
             raise ValidationError("Este becario ya ha sido asignado en 5 convocatorias.")
 
     def __str__(self):
