@@ -46,7 +46,7 @@ def import_csv_becarios(csv_file):
 
 def import_csv_emplazamientos_plazas(csv_file):
     csvf = TextIOWrapper(csv_file, encoding="utf-8")
-    reader = list(csv.reader(csvf))
+    reader = csv.reader(csvf)
     errors = []
 
     for index, row in enumerate(reader):
@@ -61,7 +61,7 @@ def import_csv_emplazamientos_plazas(csv_file):
             new_emplazamiento = models.Emplazamiento.objects.get(nombre=nombre)
         except ObjectDoesNotExist:
             new_emplazamiento = models.Emplazamiento(nombre=nombre)
-        
+
         try:
             new_emplazamiento.full_clean()
             new_emplazamiento.save()
