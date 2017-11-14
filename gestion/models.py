@@ -35,6 +35,9 @@ class Plaza(models.Model):
         return "Plaza #{0.pk}: {0.emplazamiento} - {0.horario}".format(self)
 
 class Titulacion(models.Model):
+    class Meta:
+        verbose_name = "titulación"
+        verbose_name_plural = "titulaciones"
     _TITULACION_PATRON_REGEX = r"[GMD]\d{3}"
 
     codigo = models.CharField(max_length=4, primary_key=True, validators=[RegexValidator(_TITULACION_PATRON_REGEX)])
@@ -124,6 +127,7 @@ class PreferenciasBecario(models.Model):
         # Un becario solo puede indicar su preferencia para una plaza una sola vez
         # Un becario solo puede indicar un orden de prelacion para cada plaza
         unique_together = (('becario', 'plaza'), ('becario', 'num_orden'))
+        verbose_name_plural = "preferencias becarios"
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
     num_orden = models.PositiveSmallIntegerField()
@@ -133,6 +137,10 @@ class PreferenciasBecario(models.Model):
 
 
 class PlanFormacion(models.Model):
+
+    class Meta:
+        verbose_name = "plan de formación"
+        verbose_name_plural = "planes de formación"
 
     codigo = models.CharField(primary_key=True, max_length=3)
     nombre_curso = models.CharField(max_length=200)
@@ -150,6 +158,8 @@ class AsistenciaFormacion(models.Model):
 
     class Meta:
         unique_together = (('becario', 'curso'))
+        verbose_name = "asistencia formación"
+        verbose_name_plural = "asistencias formación"
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     curso = models.ForeignKey(PlanFormacion, on_delete=models.CASCADE)
     calificacion = models.DecimalField(
@@ -161,6 +171,10 @@ class AsistenciaFormacion(models.Model):
         return "{0.becario} - {0.curso}".format(self)
 
 class ResponsableAula(models.Model):
+
+    class Meta:
+        verbose_name = "responsable de aula"
+        verbose_name_plural = "responsables de aula"
     nombre = models.CharField(max_length=200,
                               validators=[RegexValidator(_NOMBRE_REGEX)])
     apellido1 = models.CharField(max_length=200)
@@ -181,6 +195,8 @@ class CambiosPendientes(models.Model):
         # No puede haber dos cambios pendientes para el mismo becario en la
         # misma plaza para el mismo día.
         unique_together = (("becario", "plaza", "fecha_cambio"))
+        verbose_name = "cambio pendiente"
+        verbose_name_plural = "cambios pendientes"
     ESTADOS = (
         ("A", "Asignado"),
         ("R", "Renuncia"),
@@ -233,6 +249,7 @@ class HistorialBecarios(models.Model):
 
     class Meta:
         unique_together = (("dni_becario", "convocatoria"))
+        verbose_name_plural = "historiales becarios"
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
     dni_becario = models.CharField(validators=[validation.dni_validator], max_length=_DNI_MAX_LENGTH)
