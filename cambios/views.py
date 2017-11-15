@@ -14,7 +14,7 @@ from . import forms
 
 
 def group_check_all(user):
-    return user.groups.filter(name__in=['osl', 'tisu']).exists()
+    return user.groups.filter(name__in=['osl', 'tisu', "vicerrectorado"]).exists()
 
 
 def group_check_osl(user):
