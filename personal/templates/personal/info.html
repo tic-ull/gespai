@@ -1,13 +1,13 @@
 {% extends "gespai/base.html" %} {% block content %}
 <div class="container">
-    {% if cambio %}
+        <div class="content-section">
+            <h1 class="page-header">Datos del Cambio</h1>
+    {% if  %}
         {% if messages %}
             {% for message in messages %}
                 <div{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</div>
             {% endfor %}
         {% endif %}
-        <div class="content-section">
-            <h1 class="page-header">Datos del Cambio</h1>
             <p><strong>Nombre del becario: </strong>{{ cambio.becario }}</p>
             <p><strong>Estado actual del becario: </strong>{{ cambio.becario.get_estado_display }}</p>
             <p><strong>Permisos: </strong>{% if cambio.becario.permisos %}Sí{% else %}No{% endif %}</p>
@@ -25,10 +25,7 @@
                 <a href="{% url 'cambios:modificar' cambio.id %}" class="btn btn-primary">Modificar cambio</a>
                 </form>
             {% endif %}
-            </div>
             {% else %}
-            <div class="content-section">
-            <h1 class="page-header">Error</h1>
             <div class="alert alert-danger">No se encuentra un cambio con la ID especificada.</div>
         </div>
     {% endif %}

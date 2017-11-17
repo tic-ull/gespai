@@ -126,11 +126,11 @@ class PreferenciasBecario(models.Model):
     class Meta:
         # Un becario solo puede indicar su preferencia para una plaza una sola vez
         # Un becario solo puede indicar un orden de prelacion para cada plaza
-        unique_together = (('becario', 'plaza'), ('becario', 'num_orden'))
+        unique_together = (('becario', 'plaza'), ('becario', 'orden'))
         verbose_name_plural = "preferencias becarios"
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
-    num_orden = models.PositiveSmallIntegerField()
+    orden = models.PositiveSmallIntegerField()
 
     def __str__(self):
         return "{0.becario}({0.num_orden}) - {0.plaza}".format(self)

@@ -1,0 +1,28 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  <div class="content-section">
+    <h1 class="page-header">Preferencias</h1>
+    {% if becario_list %}
+      <div class="table-responsive">
+          <table class="table table-striped table-hover sortable">
+              <tr>
+                  <th>Orden</th>
+                  <th>Nombre</th>
+              </tr>
+              {% for preferencia in object_list %}
+              <tr>
+                  <td>{{ preferencia.orden }}</td>
+                  <td>{{ preferencia.nombre }}</td>
+              </tr>
+              {% endfor %}
+          </table>
+      </div>
+  </div>
+  {% else %}
+  <div class="content-section">
+      <h1 class="page-header">Error</h1>
+      <div class="alert alert-danger">No tienes preferencias guardadas.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}
