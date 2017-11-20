@@ -20,14 +20,28 @@ def cambio_estado(sender, **kwargs):
     except Notification.DoesNotExist:
         pass
     if instance.plaza:
-        desc = 'Tipo de cambio: ' + instance.get_estado_cambio_display() + '\nPlaza asociada al cambio: ' + \
-            instance.plaza + '\nFecha del cambio: ' + \
-            instance.fecha_cambio.strftime('%d/%m/%Y')
+        desc = """
+            Tipo de cambio: {}
+            Plaza asociada al cambio: {}
+            Fecha del cambio: {}
+        """.format(
+            instance.get_estado_cambio_display(),
+            instance.plaza,
+            instance.fecha_cambio.strftime('%d/%m/%Y'))
     else:
-        desc = 'Tipo de cambio: ' + instance.get_estado_cambio_display() + '\nFecha del cambio: ' + \
-            instance.fecha_cambio.strftime('%d/%m/%Y')
-    notify.send(instance.becario, recipient=osl, verb='tiene un nuevo cambio solicitado',
-                action_object=instance, target=instance.becario, description=desc)
+        desc = """
+            Tipo de cambio: {}
+            Fecha del cambio: {}
+        """.format(
+            instance.get_estado_cambio_display(),
+            instance.fecha_cambio.strftime('%d/%m/%Y'))
+    notify.send(
+        instance.becario,
+        recipient=osl,
+        verb='tiene un nuevo cambio solicitado',
+        action_object=instance,
+        target=instance.becario,
+        description=desc)
 
 
 # Si se borra un cambio, se borra la notificación asociada al mismo

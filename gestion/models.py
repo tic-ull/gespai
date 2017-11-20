@@ -133,7 +133,7 @@ class PreferenciasBecario(models.Model):
     orden = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return "{0.becario}({0.num_orden}) - {0.plaza}".format(self)
+        return "{0.becario}({0.orden}) - {0.plaza}".format(self)
 
 
 class PlanFormacion(models.Model):

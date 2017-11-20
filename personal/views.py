@@ -19,17 +19,26 @@ def group_check_all(user):
 class IndexView(generic.TemplateView):
     template_name = 'personal/index.html'
 
-# TODO:2011-11-17T14:13:(#17):jeplasenciap:
-# Falta correctamente pasar argumentos a la plantilla y hacer la
-# plantilla en sí
 @method_decorator(user_passes_test(group_check_all), name='dispatch')
 class InfoView(generic.ListView):
     template_name = 'personal/info.html'
-    model = models.Becario
-    queryset = models.Becario.objects.get(dni="78633820V")
+    queryset = models.Becario.objects.filter(dni="78633820V")
 
+    def get_context_data(self, **kwargs):
+        context = super(InfoView, self).get_context_data(**kwargs)
+        context["becario"] = models.Becario.objects.get(dni="78633820V")
+        return context
+
+# TODO:jeplasenciap:2017-11-20T1140:(#17):
+# Conectar las cuentas de los usuarios con su autenticación del CAS
+# de tal manera que sólo se muestren las preferencias guardadas del
+# usuario/alumno conectado.
 @method_decorator(user_passes_test(group_check_all), name='dispatch')
 class ListPreferenciasView(generic.ListView):
     template_name = 'personal/list_preferencias.html'
     model = models.PreferenciasBecario
-    queryset = models.PreferenciasBecario.objects.filter(becario_id="23").order_by("orden")
+    def get_context_data(self, **kwargs):
+        context = super(ListPreferenciasView, self).get_context_data(**kwargs)
+        #context["preferencias"] = models.PreferenciasBecario.objects.filter(becario_id="1").order_by("orden")
+        context["preferencias"] = models.PreferenciasBecario.objects.filter(becario_id="78633820V").order_by("orden")
+        return context
