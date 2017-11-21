@@ -36,7 +36,7 @@ class InfoView(generic.ListView):
 @method_decorator(user_passes_test(group_check_all), name='dispatch')
 class ListPreferenciasView(generic.ListView):
     template_name = 'personal/list_preferencias.html'
-    model = models.PreferenciasBecario
+    queryset  = models.PreferenciasBecario.objects.filter(becario_id="78633820V")
     def get_context_data(self, **kwargs):
         context = super(ListPreferenciasView, self).get_context_data(**kwargs)
         #context["preferencias"] = models.PreferenciasBecario.objects.filter(becario_id="1").order_by("orden")
