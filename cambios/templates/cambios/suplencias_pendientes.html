@@ -1,0 +1,32 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  {% if candidatos %}
+  <div class="content-section">
+      <h1 class="page-header">Suplentes candidatos para la {{ plaza }}</h1>
+      <div class="table-responsive">
+          <table class="table table-striped table-hover">
+              <tr>
+                  <th>Nombre</th>
+                  <th>Teléfono</th>
+                  <th>Correo Electrónico</th>
+                  <th></th>
+              </tr>
+              {% for preferencia in candidatos %}
+              <tr>
+                  <td>{{ preferencia.becario.apellido1 }} {{ preferencia.becario.apellido2 }}, {{ preferencia.becario.nombre }}</td>
+                  <td>{% if preferencia.becario.telefono %}{{ preferencia.becario.telefono }}{% else %}N/A{% endif %}</td>
+                  <td>{{ preferencia.becario.email }}</td>
+                  <td><a href="{% url "cambios:cambio" preferencia.becario.orden %}" class="btn btn-primary"><i class="fa fa-angle-right"></i> Crear cambio</td>
+              </tr>
+              {% endfor %}
+          </table>
+      </div>
+  </div>
+  {% else %}
+  <div class="content-section">
+      <h1 class="page-header">Suplentes candidatos para la plaza {{ plaza }}</h1>
+      <div class="alert alert-danger">No hay candidatos para la plaza.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

@@ -157,3 +157,23 @@ class ModificarCambioView(SuccessMessageMixin, generic.UpdateView):
 class ListCambiosView(generic.ListView):
     template_name = 'cambios/list_cambios.html'
     model = models.CambiosPendientes
+
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
+class ListSuplenciasView(generic.ListView):
+    template_name = 'cambios/list_suplencia.html'
+    queryset = models.CambiosPendientes.objects.exclude(estado_cambio="A")
+
+@method_decorator(user_passes_test(group_check_all), name='dispatch')
+class ListSuplenciaCandidatosView(generic.ListView):
+    template_name = "cambios/suplencias_pendientes.html"
+    queryset = models.PreferenciasBecario.objects.all() 
+
+    # TODO:jeplasenciap:2011-11-22T1353:(#18):
+    # Falta buscar las reglas exactas para la prioridad de los becarios
+    # para así construir la lista en el orden correcto. También, ¿quién
+    # sabe como se unen querysets? Porque yo no tengo ni idea.
+    def get_context_data(self, **kwargs):
+        context = super(ListSuplenciaCandidatosView, self). get_context_data(**kwargs)
+        context["candidatos"] = models.PreferenciasBecario.objects.filter(plaza_id=self.kwargs.get("plaza")).select_related("becario_id").filter(estado="S").order_by("orden", "becario_id")[:10]
+        context["plaza"] = models.Plaza.objects.get(id=self.kwargs.get("plaza"))
+        return context
