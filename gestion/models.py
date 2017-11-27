@@ -17,7 +17,14 @@ _NOMBRE_REGEX = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
 # Modelos
 
 class Emplazamiento(models.Model):
-    nombre = models.CharField(max_length=200)
+    
+    _MAX_LENGTH_NOMBRE = 200
+    _MAX_LENGTH_PREFIJO = 2
+
+    nombre = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+    nombre_unico = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+    prefijo_corto = models.CharField(max_length=_MAX_LENGTH_PREFIJO)
+    correo = models.EmailField()
 
     def __str__(self):
         return self.nombre
@@ -259,7 +266,7 @@ class HistorialBecarios(models.Model):
 
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
-        if entradas_historial >= _MAX_CONVOCATORIAS:
+        if entradas_historial >= self._MAX_CONVOCATORIAS:
             raise ValidationError("Este becario ya ha sido asignado en 5 convocatorias.")
 
     def __str__(self):

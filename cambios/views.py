@@ -174,6 +174,6 @@ class ListSuplenciaCandidatosView(generic.ListView):
     # sabe como se unen querysets? Porque yo no tengo ni idea.
     def get_context_data(self, **kwargs):
         context = super(ListSuplenciaCandidatosView, self). get_context_data(**kwargs)
-        context["candidatos"] = models.PreferenciasBecario.objects.filter(plaza_id=self.kwargs.get("plaza")).select_related("becario_id").filter(estado="S").order_by("orden", "becario_id")[:10]
+        context["candidatos"] = models.PreferenciasBecario.objects.filter(plaza_id=self.kwargs.get("plaza")).order_by("orden", "becario_id")[:10]
         context["plaza"] = models.Plaza.objects.get(id=self.kwargs.get("plaza"))
         return context
