@@ -19,12 +19,8 @@ _NOMBRE_REGEX = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
 class Emplazamiento(models.Model):
     
     _MAX_LENGTH_NOMBRE = 200
-    _MAX_LENGTH_PREFIJO = 2
 
     nombre = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
-    nombre_unico = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
-    prefijo_corto = models.CharField(max_length=_MAX_LENGTH_PREFIJO)
-    correo = models.EmailField()
 
     def __str__(self):
         return self.nombre

@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 from gestion import models
 
 from . import forms
-from .imports import import_csv_becarios, import_csv_emplazamientos_plazas, import_csv_plan_formacion
+from .imports import import_csv_becarios, import_csv_emplazamientos_plazas
 
 # Create your views here.
 
@@ -27,12 +27,13 @@ def upload_becarios(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            errors = import_csv_becarios(request.FILES['csv_file_field'].file)
-            if errors:
-                for error in errors:
-                    error_message = "Error en linea {}: {}".format(str(error[0]), " ".join("{}: {}".format(i, j[0]) for (i, j) in error[1]))
-                    messages.error(request, error_message)
+            try:
+                errors = import_csv_becarios(request.FILES['csv_file_field'].file)
+            except ValidationError as e:
+                for error in e:
+                    messages.error(request, str(error))
                 return redirect('/upload/becarios')
+            messages.success(request, "El fichero csv se ha subido correctamente y los datos correpondientes actualizados.")
             return redirect('/upload')
     else:
         form = forms.UploadCSVForm()
@@ -44,38 +45,13 @@ def upload_emplazamientos_plazas(request):
     if request.method == 'POST':
         form = forms.UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
-            errors = import_csv_emplazamientos_plazas(request.FILES['csv_file_field'].file)
-            if errors:
-                for error in errors:
-                    error_message = 'Error en linea ' + str(error[0]) + ': '
-                    for key, value in error[1].error_dict.items():
-                        error_message += key + ': ' + \
-                            value[0].messages[0] + ' '
-                    messages.error(request, error_message)
+            try:
+                errors = import_csv_emplazamientos_plazas(request.FILES['csv_file_field'].file)
+            except ValidationError as e:
+                for error in e:
+                    messages.error(request, str(error))
                 return redirect('/upload/plazas')
-            return redirect('/upload')
-    else:
-        form = forms.UploadCSVForm()
-    return render(request, 'upload/upload_form.html', {'form': form})
-
-
-@user_passes_test(group_check)
-def upload_plan_formacion(request):
-    if request.method == 'POST':
-        form = forms.UploadCSVForm(request.POST, request.FILES)
-        if form.is_valid():
-            errors = import_csv_plan_formacion(request.FILES['csv_file_field'].file)
-            if errors:
-                for error in errors:
-                    error_message = 'Error en linea ' + str(error[0]) + ': '
-                    if isinstance(error[1], models.Becario.DoesNotExist) or isinstance(error[1], models.PlanFormacion.DoesNotExist):
-                        error_message += error[1].message
-                    else:
-                        for key, value in error[1].error_dict.items():
-                            error_message += key + ': ' + \
-                                value[0].messages[0] + ' '
-                    messages.error(request, error_message)
-                return redirect('/upload/formacion')
+            messages.success(request, "El fichero csv se ha subido correctamente y los datos correpondientes actualizados.")
             return redirect('/upload')
     else:
         form = forms.UploadCSVForm()
