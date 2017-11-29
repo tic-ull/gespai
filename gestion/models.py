@@ -51,6 +51,9 @@ class Titulacion(models.Model):
 
 class Becario(models.Model):
 
+    class Meta:
+        ordering = ["nombre", "apellido1", "apellido2"]
+    
     _NOMBRE_MAX_LENGTH = 200
     _DNI_MAX_LENGTH = 9
 
