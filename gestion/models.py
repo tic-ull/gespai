@@ -269,4 +269,19 @@ class HistorialBecarios(models.Model):
             raise ValidationError("Este becario ya ha sido asignado en 5 convocatorias.")
 
     def __str__(self):
-        return "(0.dni_becario) - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
+        return "{0.dni_becario} - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
+
+class AdministracionEmplazamiento(models.Model):
+
+    _MAX_LENGTH_NOMBRE = 50
+
+    class Meta:
+        verbose_name = "administración emplazamiento"
+        verbose_name_plural = "administración emplazamientos"
+
+    emplazamiento = models.ForeignKey(Emplazamiento)
+    nombre_cas = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+    nombre_correo = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+
+    def __str__(self):
+        return "{emplzamiento} (Grupo del CAS:{}; Correo:{})".format(emplazamiento, nombre_cas, nombre_correo)
