@@ -13,7 +13,7 @@ from gestion import models
 from . import forms
 
 def group_check_all(user):
-    return user.groups.filter(name="alu").exists()
+    return user.groups.filter(name="alumnado").exists()
 
 @method_decorator(user_passes_test(group_check_all), name='dispatch')
 class IndexView(generic.TemplateView):
@@ -22,11 +22,11 @@ class IndexView(generic.TemplateView):
 @method_decorator(user_passes_test(group_check_all), name='dispatch')
 class InfoView(generic.ListView):
     template_name = 'personal/info.html'
-    queryset = models.Becario.objects.filter(dni="78633820V")
+    queryset = models.Becario.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(InfoView, self).get_context_data(**kwargs)
-        context["becario"] = models.Becario.objects.get(dni="78633820V")
+        context["becario"] = models.Becario.objects.get(email=self.request.user.email)
         return context
 
 # TODO:jeplasenciap:2017-11-20T1140:(#17):
