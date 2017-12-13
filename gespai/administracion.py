@@ -10,18 +10,30 @@ ser usado en producción debería ser configurado manualmente.
 Para facilitar el proceso puede ser favorable configurar la conexión
 por clave.
 """
-
+from contextlib import redirect_stdout
+from io import StringIO
 #from fabric.api import (disconnect_all, env, execute, hide, prompt, puts, run,
 #                        settings, sudo, task, warn_only)
 from fabric.api import *
 from fabric.network import disconnect_all
 from .gespai_admin_settings import (ruta_fichero_cas, ruta_fichero_alias_correo,
-                                   usuario_conexion, lamp_host, smtp_host)
+    usuario_conexion, lamp_host, smtp_host)
 
 from gestion.models import Becario, AdministracionEmplazamiento
 
 env.port = "2222"
 
+def alternate_stdout(new_stdout):
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            with redirect_stdout(new_stdout):
+                f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+alt_stdout = StringIO()
+
+@alternate_stdout(alt_stdout)
 def dar_alta(correo_alu, plaza):
     """
     Da de alta a un becario en el servidor lamp y smtp especificado,
@@ -39,20 +51,22 @@ def dar_alta(correo_alu, plaza):
     execute(actualizar_postfix)
     execute(enviar_correo_alta, correo_alu, plaza)
     disconnect_all()
-    
+
+def output_alt():
+    return alt_stdout.getvalue()    
 
 def dar_baja(correo_alu, plaza):
-    execute(eliminar_en_cas)
-    execute(eliminar_en__correo)
+    execute(eliminar_en_cas, correo_alu, plaza)
+    execute(eliminar_en_correo, correo_alu, plaza)
     execute(actualizar_postfix)
     disconnect_all()
 
 
 def cambiar(correo_alu, plaza_vieja, plaza_nueva):
-    execute(eliminar_en_cas)
-    execute(aniadir_en_cas)
-    execute(eliminar_en_correo)
-    execute(aniadir_en__correo)
+    execute(eliminar_en_cas, correo_alu, plaza)
+    execute(aniadir_en_cas, correo_alu, plaza)
+    execute(eliminar_en_correo, correo_alu, plaza)
+    execute(aniadir_en__correo, correo_alu, plaza)
     execute(actualizar_postfix)
     disconnect_all()
 

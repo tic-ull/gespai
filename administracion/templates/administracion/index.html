@@ -1,0 +1,61 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  <h1 class="page-header">Sistema de Cambios</h1>
+    <div class="row">
+        <div class="col-lg-10 col-lg-push-1 portal-panels">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-user fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Solicitud de Cambio</h4>
+                                    <p>Solicite aquí cambios de plaza para los becarios</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'cambios:becarios' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-pencil-square-o fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Cambios pendientes</h4>
+                                    <p>Consulte cambios pendientes ya solicitados sin resolver</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'cambios:list' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-users fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Listas de suplencias</h4>
+                                    <p>Consulte aquí los suplentes para las plazas disponibles</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'cambios:suplencias' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div> <!-- row -->
+        </div>
+    </div>
+</div>
+{% endblock content %}
