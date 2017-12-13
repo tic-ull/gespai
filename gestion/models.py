@@ -9,6 +9,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator, \
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User, Group
 
 from gespai import validation
 
@@ -267,3 +270,25 @@ class HistorialBecarios(models.Model):
 
     def __str__(self):
         return "(0.dni_becario) - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
+
+@receiver(post_save, sender=User)
+def populate_data(sender, instance, created, **kwargs):
+    if not created:
+        return
+    user = instance
+    if "alu" not in user.username:
+        return
+
+    correo = user.username + "@ull.edu.es"
+    try:
+        becario = Becario.objects.get(email=correo)
+    except Becario.DoesNotExist as e:
+        return
+    user.email = correo
+    user.first_name = becario.nombre
+    user.last_name = becario.apellido1 + " " + becario.apellido2
+
+    grupo_alumnado = Group.objects.get(name="alumnado")
+    user.groups.add(grupo_alumnado)
+
+    user.save()
