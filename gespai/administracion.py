@@ -11,13 +11,16 @@ Para facilitar el proceso puede ser favorable configurar la conexión
 por clave.
 """
 
-from fabric.api import (disconnect_all, env, execute, hide, prompt, puts, run,
-                        settings, sudo, task, warn_only)
-from gespai_admin_settings import (ruta_fichero_cas, ruta_fichero_alias_correo
+#from fabric.api import (disconnect_all, env, execute, hide, prompt, puts, run,
+#                        settings, sudo, task, warn_only)
+from fabric.api import *
+from fabric.network import disconnect_all
+from .gespai_admin_settings import (ruta_fichero_cas, ruta_fichero_alias_correo,
                                    usuario_conexion, lamp_host, smtp_host)
 
-from .models import Becario, PlazaAdmin
+from gestion.models import Becario, AdministracionEmplazamiento
 
+env.port = "2222"
 
 def dar_alta(correo_alu, plaza):
     """
@@ -31,10 +34,10 @@ def dar_alta(correo_alu, plaza):
             alta al usuario.
     
     """
-    execute(aniadir_en_cas)
-    execute(aniadir_en__correo)
+    execute(aniadir_en_cas, correo_alu, plaza)
+    execute(aniadir_en_correo, correo_alu, plaza)
     execute(actualizar_postfix)
-    execute(enviar_correo_alta)
+    execute(enviar_correo_alta, correo_alu, plaza)
     disconnect_all()
     
 
@@ -75,7 +78,7 @@ def sanity_check_cas(correo_alu, plaza, permisos):
     try:
         alu_grep = run(r"""grep {} {}""".format(alu_niu, ruta_fichero_cas))
     except:
-        return !permisos
+        return not permisos
     centro_grep = run(r"""grep {} {}""".format(plaza, ruta_fichero_cas))
     alu_grep_count == alu_grep.count(alu_niu)
     return centro_grep == alu_grep and alu_grep_count == 1 and permisos
@@ -83,39 +86,43 @@ def sanity_check_cas(correo_alu, plaza, permisos):
 
 @task
 @hosts(lamp_host)
-@with_settings(user=usuario_conexion, warn_only=true)
+@with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_cas(correo_alu, plaza):
-    alu_niu = correo_alu.replace("@ull.edu.es", "")
+    alu = correo_alu.replace("@ull.edu.es", "")
     # Es necesario que el usuario_conexion tenga permisos en la maquina
-    sudo(r"""sed -i -r "s/('{}'.*)(\),?\s*$)/\1, 'alu{}'\2/" {}""".format(
-        codigo_centro, alu_niu, ruta_fichero_cas))
+    sudo(r"""sed -i -r "s/('{}'.*)(\),?\s*$)/\1, '{}'\2/" {}""".format(
+        plaza, alu, ruta_fichero_cas))
 
 
 @task
 @hosts(lamp_host)
-@with_settings(user=usuario_conexion, warn_only=true)
+@with_settings(user=usuario_conexion, warn_only=True)
 def eliminar_en_cas(correo_alu, plaza):
-    alu_niu = correo_alu.replace("@ull.edu.es", "")
-    sudo(r"""sed -i -r "s/{}\s*,?//" {}""".format(alu_niu, ruta_fichero_cas))
+    alu = correo_alu.replace("@ull.edu.es", "")
+    sudo(r"""sed -i -r "s/{}\s*(, )?//g" {}""".format(alu, ruta_fichero_cas))
 
 
 @task
 @hosts(smtp_host)
-@with_settings(user=usuario_conexion, warn_only=True):
-def aniadir_en_correo(correo_alu, plaza)
-    sudo(r"""sed -r -i "s/({centro}@aulas.ull.es.*)$/\1, {niu}@ull.edu.es/" {ruta}""".format(niu=alu_niu, centro=codigo_tit, ruta=ruta_fichero_alias_correo))
+@with_settings(user=usuario_conexion, warn_only=True)
+def aniadir_en_correo(correo_alu, plaza):
+    sudo(r"""sed -r -i "s/({centro}@aulas.ull.es.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
 
 
 @task
 @hosts(smtp_host)
-@with_settings(user=usuario_conexion, warn_only=True):
-def eliminar_en_correo(correo_alu, plaza)
+@with_settings(user=usuario_conexion, warn_only=True)
+def eliminar_en_correo(correo_alu, plaza):
     sudo(r"""sed -r -i "s/alu{niu}@ull.edu.es(,?)/\1/" {ruta}""".format(niu=alu_niu, ruta=ruta_fichero_alias_correo))
 
+@task
+def enviar_correo_alta(correo_alu, plaza):
+    pass
+
 
 @task
 @hosts(smtp_host)
-@with_settings(user=usuario_conexion, warn_only=True):
+@with_settings(user=usuario_conexion, warn_only=True)
 def actualizar_postfix():
         run("postmap /etc/postfix/virtual")
         run("newaliases")
