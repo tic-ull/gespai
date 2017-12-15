@@ -17,7 +17,24 @@
                 <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>
             {% endif %}
             <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
-            <p>{{ logged }}</p>
+            {% if not hecho %}
+            <div class="row">
+                <p>A continuación se muestra la ejecución de los comandos de administración que realizan las actualizaciones en los ficheros correspondientes junto con el estado final de esos ficheros.</p> 
+                <p>Si lo aquí mostrado es correcto, da click en aceptar para dar por terminado el cambio. En caso que hubiera algún error, debe de corregirse manualmente. Por favor corrige el error y vuelve a esta ventana y dale a aceptar o marca el cambio como que requiere correción manual.</p>
+            </div> <!-- .row -->
+            {% endif %}
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row align-center">
+                    <input type="submit" class "btn btn-primary" value="Aceptar" name="cambio_final" />
+                    <div class="col-xs-6"><a href="{% url 'index' %}" class="btn btn-success btn-block">Aceptar</a></div>
+                    <div class="col-xs-6"><a href="{% url 'index' %}" class="btn btn-danger btn-block">Requiere cambio manual</a></div>
+                </div> <!-- .row .align-center -->
+            </form>
+            <br>
+            {% if log %}
+            <pre><code>{{ log }}</code></pre>
+            {% endif %}
         </div>
             {% else %}
             <div class="content-section">

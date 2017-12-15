@@ -21,19 +21,6 @@ from .gespai_admin_settings import (ruta_fichero_cas, ruta_fichero_alias_correo,
 
 from gestion.models import Becario, AdministracionEmplazamiento
 
-env.port = "2222"
-
-def alternate_stdout(new_stdout):
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            with redirect_stdout(new_stdout):
-                f(*args, **kwargs)
-        return wrapper
-    return decorator
-
-alt_stdout = StringIO()
-
-@alternate_stdout(alt_stdout)
 def dar_alta(correo_alu, plaza):
     """
     Da de alta a un becario en el servidor lamp y smtp especificado,
@@ -46,11 +33,16 @@ def dar_alta(correo_alu, plaza):
             alta al usuario.
     
     """
-    execute(aniadir_en_cas, correo_alu, plaza)
-    execute(aniadir_en_correo, correo_alu, plaza)
-    execute(actualizar_postfix)
-    execute(enviar_correo_alta, correo_alu, plaza)
-    disconnect_all()
+    env.port = "2222"
+    try:
+        execute(aniadir_en_cas, correo_alu, plaza.nombre_cas)
+        execute(aniadir_en_correo, correo_alu, plaza.nombre_correo)
+        execute(actualizar_postfix)
+        execute(enviar_correo_alta, correo_alu, plaza.emplazamiento.nombre)
+    except SystemExit as e:
+        print(e)
+    finally:
+        disconnect_all()
 
 def output_alt():
     return alt_stdout.getvalue()    
@@ -98,14 +90,14 @@ def sanity_check_cas(correo_alu, plaza, permisos):
     return centro_grep == alu_grep and alu_grep_count == 1 and permisos
 
 
-@task
+@task(alias="añadir en CAS")
 @hosts(lamp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_cas(correo_alu, plaza):
     alu = correo_alu.replace("@ull.edu.es", "")
-    # Es necesario que el usuario_conexion tenga permisos en la maquina
     sudo(r"""sed -i -r "s/('{}'.*)(\),?\s*$)/\1, '{}'\2/" {}""".format(
         plaza, alu, ruta_fichero_cas))
+    run(r"""cat {}""".format(ruta_fichero_cas))
 
 
 @task
@@ -114,6 +106,7 @@ def aniadir_en_cas(correo_alu, plaza):
 def eliminar_en_cas(correo_alu, plaza):
     alu = correo_alu.replace("@ull.edu.es", "")
     sudo(r"""sed -i -r "s/{}\s*(, )?//g" {}""".format(alu, ruta_fichero_cas))
+    run(r"""cat {}""".format(ruta_fichero_cas))
 
 
 @task
@@ -121,6 +114,7 @@ def eliminar_en_cas(correo_alu, plaza):
 @with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_correo(correo_alu, plaza):
     sudo(r"""sed -r -i "s/({centro}@aulas.ull.es.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
+    run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 
 @task
@@ -128,6 +122,7 @@ def aniadir_en_correo(correo_alu, plaza):
 @with_settings(user=usuario_conexion, warn_only=True)
 def eliminar_en_correo(correo_alu, plaza):
     sudo(r"""sed -r -i "s/alu{niu}@ull.edu.es(,?)/\1/" {ruta}""".format(niu=alu_niu, ruta=ruta_fichero_alias_correo))
+    run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 @task
 def enviar_correo_alta(correo_alu, plaza):

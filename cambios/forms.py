@@ -17,7 +17,7 @@ class ObservacionesBecarioForm(forms.Form):
 class CambioBecarioForm(forms.ModelForm):
     class Meta:
         model = models.CambiosPendientes
-        exclude = ('becario',)
+        exclude = ('becario', "requiere_accion_manual")
 
     def __init__(self, *args, **kwargs):
         self.becario = kwargs.pop('becario')

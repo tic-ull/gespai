@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.messages.views import SuccessMessageMixin
-from django.conf import settings
+from django.conf.settings import MES_INICIO_CONV
 
 from gestion import models
 
@@ -23,19 +23,69 @@ def group_check_osl(user):
 class IndexView(generic.TemplateView):
     template_name = 'administracion/index.html'
 
+def passf(*args, **kwargs):
+    pass
 
+acciones_administracion = {
+    "A": dar_alta,
+    "R": dar_alta, # dar baja
+    "T": passf
+}
 @user_passes_test(group_check_osl)
 def autorizar_cambio(request, pk_cambio):
     try:
         cambio = models.CambiosPendientes.objects.get(pk=pk_cambio)
     except models.CambiosPendientes.DoesNotExist:
-        cambio = None
+     return render(request, 'administracion/autorizar_cambio.html')
 
-    if request.method == 'POST':
-        if 'cambio' in request.POST:
-            with StringIO() as out, redirect_stdout(out):
-                dar_alta("alu0100791327", "biologia")
-                logged = out.getvalue()
+    if not cambio.requiere_accion_manual:
+        """
+        Si no se ha intentado ejecutar los scripts de administración
+        sobre el cambio se procede a hacerse.
+        """
+        with StringIO() as out, redirect_stdout(out):
+            acciones_administracion[cambio.estado_cambio](cambio.becario.email, models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.becario.plaza_asignada.emplazamiento))
+            logged = out.getvalue()
+        cambio.requiere_accion_manual = True
+        cambio.save(update_fields=["requiere_accion_manual"])
         return render(request, 'administracion/autorizar_cambio.html', {'cambio': cambio, "log": logged})
-            
-    return render(request, 'administracion/autorizar_cambio.html', {'cambio': cambio})
+    
+    if request.POST.get("cambio_final"):
+        """
+        Si el cambio se hace definitivo se procede a modificar la base
+        de datos con el cambio
+        """
+        becario = cambio.becario
+        if cambio.estado_cambio == 'T':
+            becario.estado = 'A'
+        elif cambio.estado_cambio == 'R':
+            becario.estado = cambio.estado_cambio
+            becario.plaza_asignada = None
+        else:
+            becario.estado = cambio.estado_cambio
+        try:
+            becario.full_clean()
+            becario.save()
+            # El mes de inicio de la convocatoria es una constante que se declara
+            # en el fichero settings.py del proyecto.
+            if cambio.fecha_cambio.month < MES_INICIO_CONV:
+                conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year - 1,
+                                                                    anyo_fin=cambio.fecha_cambio.year)
+            else:
+                conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year,
+                                                                    anyo_fin=cambio.fecha_cambio.year + 1)
+            hist, c = models.HistorialBecarios.objects.get_or_create(dni_becario=becario.dni,
+                                                            convocatoria=conv)
+            if cambio.estado_cambio == 'A':
+                hist.fecha_asignacion = cambio.fecha_cambio
+            elif cambio.estado_cambio == 'R':
+                hist.fecha_renuncia = cambio.fecha_cambio
+            hist.full_clean()
+            hist.save()
+            cambio.delete()
+            return redirect("cambios:list")
+        except ValidationError as e:
+            messages.error(request, e.messages[0], extra_tags='alert alert-danger')
+            return redirect('cambios:aceptar', id_cambio=id_cambio)
+    messages.error(request, "A este cambio ya se le intentaron aplicar los cambios remotos correspondientes. ", extra_tags="alert alert-danger")
+    return render(request, 'administracion/autorizar_cambio.html', {'cambio': cambio, "hecho": True})

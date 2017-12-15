@@ -215,6 +215,7 @@ class CambiosPendientes(models.Model):
     fecha_cambio = models.DateField(null=True, blank=True)
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
     observaciones = models.TextField(blank=True)
+    requiere_accion_manual = models.BooleanField(default=False)
 
     def clean(self):
         if hasattr(self, "becario") and self.estado_cambio == "A":
@@ -284,4 +285,4 @@ class AdministracionEmplazamiento(models.Model):
     nombre_correo = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
 
     def __str__(self):
-        return "{emplzamiento} (Grupo del CAS:{}; Correo:{})".format(emplazamiento, nombre_cas, nombre_correo)
+        return "{} (Grupo del CAS:{}; Correo:{})".format(self.emplazamiento, self.nombre_cas, self.nombre_correo)
