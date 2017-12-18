@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.messages.views import SuccessMessageMixin
-from django.conf.settings import MES_INICIO_CONV
+from django.conf import settings as django_settings
 
 from gestion import models
 
@@ -68,7 +68,7 @@ def autorizar_cambio(request, pk_cambio):
             becario.save()
             # El mes de inicio de la convocatoria es una constante que se declara
             # en el fichero settings.py del proyecto.
-            if cambio.fecha_cambio.month < MES_INICIO_CONV:
+            if cambio.fecha_cambio.month < django_settings.MES_INICIO_CONV:
                 conv, c = models.Convocatoria.objects.get_or_create(anyo_inicio=cambio.fecha_cambio.year - 1,
                                                                     anyo_fin=cambio.fecha_cambio.year)
             else:

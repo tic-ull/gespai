@@ -14,7 +14,7 @@
             <p><strong>Estado del cambio: </strong>{{ cambio.get_estado_cambio_display }}</p>
             <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
             {% if cambio.plaza %}
-                <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>
+            <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>
             {% endif %}
             <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
             {% if not hecho %}
@@ -26,21 +26,20 @@
             <form action="" method="post">
                 {% csrf_token %}
                 <div class="row align-center">
-                    <input type="submit" class "btn btn-primary" value="Aceptar" name="cambio_final" />
-                    <div class="col-xs-6"><a href="{% url 'index' %}" class="btn btn-success btn-block">Aceptar</a></div>
-                    <div class="col-xs-6"><a href="{% url 'index' %}" class="btn btn-danger btn-block">Requiere cambio manual</a></div>
+                    <div class="col-xs-6"><input type="submit" class="btn btn-success btn-block" value="Aceptar" name="cambio_final" /></div>
+                    <div class="col-xs-6"><a href="{% url 'cambios:list' %}" class="btn btn-danger btn-block">Requiere cambio manual</a></div>
                 </div> <!-- .row .align-center -->
             </form>
             <br>
             {% if log %}
             <pre><code>{{ log }}</code></pre>
             {% endif %}
-        </div>
-            {% else %}
-            <div class="content-section">
+        </div> <!-- .content-section -->
+        {% else %}
+        <div class="content-section">
             <h1 class="page-header">Error</h1>
             <div class="alert alert-danger">No se encuentra un cambio con la ID especificada.</div>
-        </div>
+        </div> <!-- .content-section -->
     {% endif %}
-</div>
+</div> <!-- .container -->
 {% endblock content %}

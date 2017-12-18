@@ -3,12 +3,27 @@ En este fichero se definen los scripts que ejecutan las tareas de
 administración vinculadas con el manejo de los becarios.
 
 A manera de no mantener información sensible con el repositorio, se carga
-la configuración desde un fichero `../../gespai_admin_settings.py`. Se
+la configuración desde un fichero `./gespai_admin_settings.py`. Se
 provee uno solo de ejemplo en el repositorio, mientras que el que va a
 ser usado en producción debería ser configurado manualmente.
 
 Para facilitar el proceso puede ser favorable configurar la conexión
-por clave.
+por clave y configurar algun usuario que pueda hacer sudo sin
+contraseña o bien configurar la contraseña mediante `env.password`.
+
+Fabric, la librería que maneja las conexiones ssh y la ejecución de
+comandos remotos muestra toda su salida por stdout y stderr. A fines de
+logging y mostrar por pantalla es recomendable usar alguna salida
+alterna mediante:
+
+```
+    from io import StringIO
+    from contextlib import redirect_stdout, redirect_stderr
+    [...]
+    with StringIO() as buf, redirect_stdout(buf), redirect_stderr(buf):
+        # Realizar aquí adentro las llamadas a las funciones de este
+        # módulo
+```
 """
 from contextlib import redirect_stdout
 from io import StringIO
@@ -24,14 +39,12 @@ from gestion.models import Becario, AdministracionEmplazamiento
 def dar_alta(correo_alu, plaza):
     """
     Da de alta a un becario en el servidor lamp y smtp especificado,
-    modificando los ficheros correspondientes
+    modificando los ficheros correspondientes.
 
     Argumentos:
         :correo_alu: El correo del becario, que debe ser de la forma
             "alu\d{10}@ull.edu.es".
-        :plaza: El identificador de la plaza en la que se va a dar de
-            alta al usuario.
-    
+        :plaza: Una instancia del modelo AdministracionEmplazamiento.
     """
     env.port = "2222"
     try:
@@ -44,9 +57,6 @@ def dar_alta(correo_alu, plaza):
     finally:
         disconnect_all()
 
-def output_alt():
-    return alt_stdout.getvalue()    
-
 def dar_baja(correo_alu, plaza):
     execute(eliminar_en_cas, correo_alu, plaza)
     execute(eliminar_en_correo, correo_alu, plaza)
@@ -55,10 +65,10 @@ def dar_baja(correo_alu, plaza):
 
 
 def cambiar(correo_alu, plaza_vieja, plaza_nueva):
-    execute(eliminar_en_cas, correo_alu, plaza)
-    execute(aniadir_en_cas, correo_alu, plaza)
-    execute(eliminar_en_correo, correo_alu, plaza)
-    execute(aniadir_en__correo, correo_alu, plaza)
+    execute(eliminar_en_cas, correo_alu, plaza_vieja)
+    execute(eliminar_en_correo, correo_alu, plaza_vieja)
+    execute(aniadir_en_cas, correo_alu, plaza_nueva)
+    execute(aniadir_en__correo, correo_alu, plaza_nueva)
     execute(actualizar_postfix)
     disconnect_all()
 
@@ -113,7 +123,7 @@ def eliminar_en_cas(correo_alu, plaza):
 @hosts(smtp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_correo(correo_alu, plaza):
-    sudo(r"""sed -r -i "s/({centro}@aulas.ull.es.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
+    sudo(r"""sed -r -i "s/({centro}@.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
     run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 
@@ -121,7 +131,7 @@ def aniadir_en_correo(correo_alu, plaza):
 @hosts(smtp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def eliminar_en_correo(correo_alu, plaza):
-    sudo(r"""sed -r -i "s/alu{niu}@ull.edu.es(,?)/\1/" {ruta}""".format(niu=alu_niu, ruta=ruta_fichero_alias_correo))
+    sudo(r"""sed -r -i "s/{niu},?//" {ruta}""".format(niu=alu_niu, ruta=ruta_fichero_alias_correo))
     run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 @task

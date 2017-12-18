@@ -273,6 +273,10 @@ class HistorialBecarios(models.Model):
         return "{0.dni_becario} - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
 
 class AdministracionEmplazamiento(models.Model):
+    """
+    Este modelo almacena la relación entre emplazamientos y sus
+    nombres de administración en el CAS y en los alias de correos.
+    """
 
     _MAX_LENGTH_NOMBRE = 50
 
