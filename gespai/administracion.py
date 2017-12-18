@@ -27,12 +27,14 @@ alterna mediante:
 """
 from contextlib import redirect_stdout
 from io import StringIO
+import smtplib
+from email.mime.text import MIMEText
 #from fabric.api import (disconnect_all, env, execute, hide, prompt, puts, run,
 #                        settings, sudo, task, warn_only)
 from fabric.api import *
 from fabric.network import disconnect_all
 from .gespai_admin_settings import (ruta_fichero_cas, ruta_fichero_alias_correo,
-    usuario_conexion, lamp_host, smtp_host)
+    usuario_conexion, lamp_host, smtp_host, smtp_server_name, direccion_siga)
 
 from gestion.models import Becario, AdministracionEmplazamiento
 
@@ -58,17 +60,19 @@ def dar_alta(correo_alu, plaza):
         disconnect_all()
 
 def dar_baja(correo_alu, plaza):
-    execute(eliminar_en_cas, correo_alu, plaza)
-    execute(eliminar_en_correo, correo_alu, plaza)
+    env.port = "2222"
+    execute(eliminar_en_cas, correo_alu, plaza.nombre_cas)
+    execute(eliminar_en_correo, correo_alu, plaza.nombre_correo)
     execute(actualizar_postfix)
     disconnect_all()
 
 
 def cambiar(correo_alu, plaza_vieja, plaza_nueva):
-    execute(eliminar_en_cas, correo_alu, plaza_vieja)
-    execute(eliminar_en_correo, correo_alu, plaza_vieja)
-    execute(aniadir_en_cas, correo_alu, plaza_nueva)
-    execute(aniadir_en__correo, correo_alu, plaza_nueva)
+    env.port = "2222"
+    execute(eliminar_en_cas, correo_alu, plaza_vieja.nombre_cas)
+    execute(eliminar_en_correo, correo_alu, plaza_vieja.nombre_correo)
+    execute(aniadir_en_cas, correo_alu, plaza_nueva.nombre_cas)
+    execute(aniadir_en_correo, correo_alu, plaza_nueva.nombre_correo)
     execute(actualizar_postfix)
     disconnect_all()
 
@@ -100,7 +104,7 @@ def sanity_check_cas(correo_alu, plaza, permisos):
     return centro_grep == alu_grep and alu_grep_count == 1 and permisos
 
 
-@task(alias="añadir en CAS")
+@task
 @hosts(lamp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_cas(correo_alu, plaza):
@@ -115,7 +119,8 @@ def aniadir_en_cas(correo_alu, plaza):
 @with_settings(user=usuario_conexion, warn_only=True)
 def eliminar_en_cas(correo_alu, plaza):
     alu = correo_alu.replace("@ull.edu.es", "")
-    sudo(r"""sed -i -r "s/{}\s*(, )?//g" {}""".format(alu, ruta_fichero_cas))
+    sudo(r"""sed -i -r "s/(, )?'{}'//g" {}""".format(alu, ruta_fichero_cas))
+    sudo(r"""sed -i -r "s/(\(), /\1/g" {}""".format(ruta_fichero_cas))
     run(r"""cat {}""".format(ruta_fichero_cas))
 
 
@@ -123,7 +128,7 @@ def eliminar_en_cas(correo_alu, plaza):
 @hosts(smtp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def aniadir_en_correo(correo_alu, plaza):
-    sudo(r"""sed -r -i "s/({centro}@.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
+    sudo(r"""sed -r -i "s/({centro}.*)$/\1, {correo_alu}/" {ruta}""".format(correo_alu=correo_alu, centro=plaza, ruta=ruta_fichero_alias_correo))
     run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 
@@ -131,12 +136,22 @@ def aniadir_en_correo(correo_alu, plaza):
 @hosts(smtp_host)
 @with_settings(user=usuario_conexion, warn_only=True)
 def eliminar_en_correo(correo_alu, plaza):
-    sudo(r"""sed -r -i "s/{niu},?//" {ruta}""".format(niu=alu_niu, ruta=ruta_fichero_alias_correo))
+    sudo(r"""sed -r -i "s/(,\s)?{}//" {}""".format(correo_alu, ruta_fichero_alias_correo))
+    sudo(r"""sed -i -r "s/(\s+), /\1/g" {}""".format(ruta_fichero_alias_correo))
     run(r"""cat {}""".format(ruta_fichero_alias_correo))
 
 @task
 def enviar_correo_alta(correo_alu, plaza):
-    pass
+	from django.core.mail import send_mail
+
+	send_mail(
+		'Probandote',
+		'Mensajitu',
+		'siga@osl.ull.es',
+		['alu0100791327@ull.edu.es'],
+		fail_silently=False,
+	)
+
 
 
 @task

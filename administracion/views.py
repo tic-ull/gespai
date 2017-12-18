@@ -1,6 +1,6 @@
 # coding=utf-8
 from io import StringIO
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 
 from django.shortcuts import render
 from django.views import generic
@@ -19,18 +19,12 @@ from gespai.administracion import *
 def group_check_osl(user):
     return user.groups.filter(name='osl').exists()
 
+
 @method_decorator(user_passes_test(group_check_osl), name='dispatch')
 class IndexView(generic.TemplateView):
     template_name = 'administracion/index.html'
 
-def passf(*args, **kwargs):
-    pass
 
-acciones_administracion = {
-    "A": dar_alta,
-    "R": dar_alta, # dar baja
-    "T": passf
-}
 @user_passes_test(group_check_osl)
 def autorizar_cambio(request, pk_cambio):
     try:
@@ -43,8 +37,15 @@ def autorizar_cambio(request, pk_cambio):
         Si no se ha intentado ejecutar los scripts de administración
         sobre el cambio se procede a hacerse.
         """
-        with StringIO() as out, redirect_stdout(out):
-            acciones_administracion[cambio.estado_cambio](cambio.becario.email, models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.becario.plaza_asignada.emplazamiento))
+        with StringIO() as out, redirect_stdout(out), redirect_stderr(out):
+            if cambio.estado_cambio == "A":
+                dar_alta(cambio.becario.email, models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.plaza.emplazamiento))
+            elif cambio.estado_cambio == "R":
+                dar_baja(cambio.becario.email, models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.becario.plaza_asignada.emplazamiento))
+            elif cambio.estado_cambio == "T":
+                cambiar(cambio.becario.email,
+                    models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.becario.plaza_asignada.emplazamiento),
+                    models.AdministracionEmplazamiento.objects.get(emplazamiento=cambio.plaza.emplazamiento))
             logged = out.getvalue()
         cambio.requiere_accion_manual = True
         cambio.save(update_fields=["requiere_accion_manual"])
@@ -58,11 +59,15 @@ def autorizar_cambio(request, pk_cambio):
         becario = cambio.becario
         if cambio.estado_cambio == 'T':
             becario.estado = 'A'
+            becario.plaza_asignada = cambio.plaza
         elif cambio.estado_cambio == 'R':
             becario.estado = cambio.estado_cambio
             becario.plaza_asignada = None
+            becario.permisos = False
         else:
             becario.estado = cambio.estado_cambio
+            becario.plaza_asignada = cambio.plaza
+            becario.permisos = True
         try:
             becario.full_clean()
             becario.save()
@@ -86,6 +91,6 @@ def autorizar_cambio(request, pk_cambio):
             return redirect("cambios:list")
         except ValidationError as e:
             messages.error(request, e.messages[0], extra_tags='alert alert-danger')
-            return redirect('cambios:aceptar', id_cambio=id_cambio)
+            return redirect('cambios:list')
     messages.error(request, "A este cambio ya se le intentaron aplicar los cambios remotos correspondientes. ", extra_tags="alert alert-danger")
     return render(request, 'administracion/autorizar_cambio.html', {'cambio': cambio, "hecho": True})
