@@ -189,7 +189,7 @@ class ResponsableAula(models.Model):
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
     dni = models.CharField(primary_key=True, validators=[validation.dni_validator],
-                           max_length=8)
+                           max_length=9)
     email = models.EmailField(unique=True)
     telefono = models.CharField(max_length=15,
         validators=[validation.telefono_validator], blank=True, null=True)

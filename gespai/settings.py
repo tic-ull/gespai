@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'cambios.apps.CambiosConfig',
     'personal.apps.PersonalConfig',
     'administracion.apps.AdministracionConfig',
+    'responsables.apps.ResponsablesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

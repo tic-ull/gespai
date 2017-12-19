@@ -1,0 +1,21 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container-fluid">
+  <div class="content-section">
+    <h1 class="page-header">Cambios Pendientes</h1>
+    {% if becarios %}
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+          <tr>
+              <th>Becario</th>
+          </tr>
+          {% for becario in becarios %}
+              <td>{{ becario }}</td>
+          {% endfor %}
+      </table>
+    </div>
+  {% else %}
+      <div class="alert alert-danger">No hay becarios asignados a su centro o su cuenta de usuario está mal configurada..</div>
+  {% endif %}
+  </div>
+</div>
+{% endblock content %}
