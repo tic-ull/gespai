@@ -18,11 +18,20 @@
             {% endif %}
             <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
             <p><strong>Observaciones: </strong>{{ cambio.observaciones }}</p>
+            {% if aceptable %}
+            <div class="alert alert-danger">Dar click a aceptar cambio procederá a ejecutar los scripts que actualizan los ficheros de administración en los servidores que fuese. Asegurese de que el cambio es seguro, no hay forma fácil de dar vuelta atrás</div>
+            {% else %}
+            <div class="alert alert-info">Este cambio no admite ser aceptado por no haber llegado la fecha del cambio todavía.</div>
+            {% endif %}
             {% if is_osl %}
                 <form action="" method="POST">
-                {% csrf_token %}
-                <input type="submit" class="btn btn-primary" value="Aceptar cambio" name="aceptar">
-                <a href="{% url 'cambios:modificar' cambio.id %}" class="btn btn-primary">Modificar cambio</a>
+                {% if aceptable %}
+                    {% csrf_token %}
+                    <a href="{% url 'administracion:autorizar' cambio.pk %}"><input type="submit" class="btn btn-primary" value="Aceptar cambio" name="aceptar"></a>
+                {% else %}
+                    <a class="btn btn-primary disabled">Aceptar cambio</a>
+                {% endif %}
+                    <a href="{% url 'cambios:modificar' cambio.id %}" class="btn btn-primary">Modificar cambio</a>
                 </form>
             {% endif %}
             </div>

@@ -218,6 +218,7 @@ class CambiosPendientes(models.Model):
     fecha_cambio = models.DateField(null=True, blank=True)
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
     observaciones = models.TextField(blank=True)
+    requiere_accion_manual = models.BooleanField(default=False)
 
     def clean(self):
         if hasattr(self, "becario") and self.estado_cambio == "A":
@@ -273,6 +274,25 @@ class HistorialBecarios(models.Model):
 
     def __str__(self):
         return "(0.dni_becario) - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
+
+class AdministracionEmplazamiento(models.Model):
+    """
+    Este modelo almacena la relación entre emplazamientos y sus
+    nombres de administración en el CAS y en los alias de correos.
+    """
+
+    _MAX_LENGTH_NOMBRE = 50
+
+    class Meta:
+        verbose_name = "administración emplazamiento"
+        verbose_name_plural = "administración emplazamientos"
+
+    emplazamiento = models.ForeignKey(Emplazamiento)
+    nombre_cas = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+    nombre_correo = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+
+    def __str__(self):
+        return "{} (Grupo del CAS:{}; Correo:{})".format(self.emplazamiento, self.nombre_cas, self.nombre_correo)
 
 @receiver(post_save, sender=User)
 def populate_data(sender, instance, created, **kwargs):
