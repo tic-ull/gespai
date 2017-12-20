@@ -15,6 +15,7 @@ class BecariosView(generic.ListView):
         context = super(BecariosView, self).get_context_data(**kwargs)
         correo = self.request.user.username + "@ull.edu.es"
         emplazamiento_responsable = models.ResponsableAula.objects.get(email=correo).emplazamiento
+        context["emplazamiento"] = emplazamiento_responsable
         plazas = models.Plaza.objects.filter(emplazamiento=emplazamiento_responsable)
         becarios = models.Becario.objects.filter(plaza_asignada__in=plazas)
         context["becarios"] = becarios
