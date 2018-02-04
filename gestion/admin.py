@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from .models import (Becario, Plaza, Emplazamiento, PreferenciasBecario, PlanFormacion,
 AsistenciaFormacion, ResponsableAula, CambiosPendientes, HistorialBecarios, Titulacion,
-Convocatoria)
+Convocatoria, AdministracionEmplazamiento)
 
 class BecarioAdmin(admin.ModelAdmin):
     list_display = ('orden', 'nombre', 'apellido1', 'apellido2', 'dni', 'email', 'telefono',
@@ -57,6 +57,10 @@ class AsistenciaFormacionAdmin(admin.ModelAdmin):
     get_estado.short_description = "Estado"
     get_estado.admin_order_field = 'becario__estado'
 
+class AdministracionEmplazamientoAdmin(admin.ModelAdmin):
+    list_display = ("emplazamiento", "nombre_cas", "nombre_correo") 
+    list_filter = ["emplazamiento", "nombre_cas", "nombre_correo"]
+
 admin.site.register(Becario, BecarioAdmin)
 admin.site.register(Plaza, PlazaAdmin)
 admin.site.register(Emplazamiento, EmplazamientoAdmin)
@@ -68,3 +72,4 @@ admin.site.register(CambiosPendientes, CambiosPendientesAdmin)
 admin.site.register(HistorialBecarios, HistorialBecariosAdmin)
 admin.site.register(Titulacion, TitulacionAdmin)
 admin.site.register(Convocatoria)
+admin.site.register(AdministracionEmplazamiento, AdministracionEmplazamientoAdmin)

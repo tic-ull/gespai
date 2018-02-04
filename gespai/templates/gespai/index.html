@@ -36,12 +36,14 @@
                                     <i class="fa fa-user fa-5x"></i>
                                 </div>
                                 <div class="col-md-10">
+                                    {% if not user.is_authenticated %}
                                     <h4>Inicio de Sesión</h4>
                                     <p>Introduzca sus datos para acceder al sistema</p>
-                                    {% if not user.is_authenticated %}
                                     <a class="btn btn-success btn-sm" href="{% url 'login' %}"><i class="fa fa-angle-double-right"></i> Inicie sesión</a>
                                     {% else %}
-                                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="fa fa-angle-double-right"></i> Cerrar sesión</a>
+                                    <h4>Cerrar Sesión</h4>
+                                    <p>Cierre sesión</p>
+                                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="fa fa-sign-out"></i> Cerrar sesión</a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -60,6 +62,42 @@
                                     <h4>Sistema de cambios a becarios</h4>
                                     <p>Solicite aquí cambios de plaza para los becarios</p>
                                     <a class="btn btn-primary btn-sm" href="{% url 'cambios:index' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if is_alu %}
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-pencil-square-o fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Área Personal</h4>
+                                    <p>Revisa aquí información personal tuya y revisa o modifica tus preferencias</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'personal:index' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if is_responsable %}
+                <div class="col-xs-12 col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-2 align-center">
+                                    <i class="fa fa-users fa-5x"></i>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4>Área para responsables de aula</h4>
+                                    <p>Revisa la información de los becarios de tu centro.</p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'responsables:index' %}"><i class="fa fa-angle-double-right"></i> Acceder</a>
                                 </div>
                             </div>
                         </div>

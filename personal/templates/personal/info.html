@@ -1,0 +1,16 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+        <div class="content-section">
+            <h1 class="page-header">Datos personales</h1>
+            {% if becario %}
+            <p><strong>DNI: </strong>{{becario.dni}}</p>
+            <p><strong>Nombre: </strong>{{ becario.nombre }} {{ becario.apellido1 }} {{ becario.apellido2 }}</p>
+            <p><strong>Estado actual: </strong>{{ becario.get_estado_display }}</p>
+            <p><strong>Permisos: </strong>{% if becario.permisos %}Sí{% else %}No{% endif %}</p>
+            <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
+        </div>
+            {% else %}
+                <p>No estás registrado como becario y, para ser sincero, no sé cómo has llegado aquí.</p>
+            {% endif %}
+</div>
+{% endblock content %}

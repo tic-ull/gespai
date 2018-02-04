@@ -1,50 +1,32 @@
 # coding=utf-8
-from __future__ import unicode_literals
+
 import datetime
 
-from django.db import models
-from django.core import validators
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MinValueValidator, MaxValueValidator, \
+    RegexValidator
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import ugettext as _
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User, Group
 
+from gespai import validation
 
-nombre_regex = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
-
-# Métodos para realizar validaciones
-
-def dni_validator(dni):
-    if len(dni) == 8:
-        if (dni[0].isalpha() and dni[1:].isdigit()) or dni.isdigit():
-            return
-    raise ValidationError(
-        ('Introduzca un DNI válido'),
-        params={'value': dni},
-    )
-
-
-def telefono_validator(telefono):
-    if len(str(telefono)) != 9:
-        raise ValidationError(
-            ('Introduzca un número de teléfono válido'),
-            params={'value': telefono},
-        )
-
-def codigo_tit_validator(codigo):
-    if len(codigo) == 4:
-        if codigo[0].isalpha and codigo[1:].isdigit():
-            return
-    raise ValidationError(
-        ('Introduzca un codigo de titulacion valido'),
-        params={'value': codigo},
-    )
+_NOMBRE_REGEX = r'^(?i)([a-zñÁÉÍÓÚáéíóú. ]{2,60})$'
 
 # Modelos
 
 class Emplazamiento(models.Model):
-    nombre = models.CharField(max_length=200)
+    
+    _MAX_LENGTH_NOMBRE = 200
 
-    def __unicode__(self):
-        return unicode(self.nombre)
+    nombre = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+
+    def __str__(self):
+        return self.nombre
 
 
 class Plaza(models.Model):
@@ -55,38 +37,57 @@ class Plaza(models.Model):
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
     horario = models.CharField(max_length=1, choices=HORARIOS)
 
-    def __unicode__(self):
-        return 'Plaza #' + unicode(self.pk) + ': ' + unicode(self.emplazamiento) + ' - ' + self.get_horario_display()
+    def __str__(self):
+        return "Plaza #{0.pk}: {0.emplazamiento} - {0.horario}".format(self)
 
 class Titulacion(models.Model):
-    codigo = models.CharField(max_length=4, primary_key=True, validators=[codigo_tit_validator])
+    class Meta:
+        verbose_name = "titulación"
+        verbose_name_plural = "titulaciones"
+    _TITULACION_PATRON_REGEX = r"[GMD]\d{3}"
+
+    codigo = models.CharField(max_length=4, primary_key=True, validators=[RegexValidator(_TITULACION_PATRON_REGEX)])
     nombre = models.CharField(max_length=200)
 
-    def __unicode__(self):
-        return unicode(self.nombre)
+    def __str__(self):
+        return self.nombre
 
 class Becario(models.Model):
+
+    class Meta:
+        ordering = ["nombre", "apellido1", "apellido2"]
+    
+    _NOMBRE_MAX_LENGTH = 200
+    _DNI_MAX_LENGTH = 9
+
     ESTADOS = (
-        ('A', 'Asignado'),
-        ('S', 'Suplente'),
-        ('R', 'Renuncia'),
-        ('E', 'Excluido'),
-        ('N', 'No asignado')
+        ("A", "Asignado"),
+        ("S", "Suplente"),
+        ("R", "Renuncia"),
+        ("E", "Excluido"),
+        ("N", "No asignado")
     )
-    nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(nombre_regex)])
-    apellido1 = models.CharField(max_length=200)
-    apellido2 = models.CharField(max_length=200, blank=True)
+    nombre = models.CharField(
+             max_length=_NOMBRE_MAX_LENGTH,
+             validators=[RegexValidator(_NOMBRE_REGEX)])
+    apellido1 = models.CharField(
+                max_length=_NOMBRE_MAX_LENGTH,
+                validators=[RegexValidator(_NOMBRE_REGEX)])
+    apellido2 = models.CharField(
+                max_length=_NOMBRE_MAX_LENGTH,
+                blank=True,
+                validators=[RegexValidator(_NOMBRE_REGEX)])
     orden = models.PositiveIntegerField(unique=True)
-    dni = models.CharField(primary_key=True, validators=[dni_validator],
-                           max_length=8)
+    dni = models.CharField(primary_key=True,
+                           validators=[validation.dni_validator],
+                           max_length=_DNI_MAX_LENGTH)
     estado = models.CharField(max_length=1, choices=ESTADOS, default='N')
     titulacion = models.ForeignKey(Titulacion, on_delete=models.PROTECT)
-    plaza_asignada = models.ForeignKey(Plaza, on_delete=models.SET_NULL,
+    plaza_asignada = models.OneToOneField(Plaza, on_delete=models.SET_NULL,
                                        blank=True, null=True, unique=True)
     email = models.EmailField(unique=True)
-    telefono = models.PositiveIntegerField(
-        validators=[telefono_validator], blank=True, null=True)
+    telefono = models.CharField(max_length=15,
+        validators=[validation.telefono_validator], blank=True, null=True)
     permisos = models.BooleanField(default=False)
     observaciones = models.TextField(blank=True)
 
@@ -97,7 +98,7 @@ class Becario(models.Model):
     def save(self, *args, **kwargs):
         # Si el becario pasa de no tener plaza a tener una
         if self.__plaza_previa == None and self.plaza_asignada != None:
-            self.estado = 'A'
+            self.estado = "A"
             # Se crea una entrada en HistorialBecarios para este becario en este año.
             # Si existe una entrada para este becario en este año no se hace nada.
             hoy = datetime.datetime.now()
@@ -108,7 +109,7 @@ class Becario(models.Model):
             HistorialBecarios.objects.get_or_create(dni_becario=self.dni, convocatoria=conv)
         # Si el becario pasa de tener una plaza a no tener una
         elif self.__plaza_previa != None and self.plaza_asignada == None:
-            self.estado = 'R'
+            self.estado = "R"
             try:
                 hoy = datetime.datetime.now()
                 if hoy.month < settings.MES_INICIO_CONV:
@@ -126,29 +127,29 @@ class Becario(models.Model):
         super(Becario, self).save(*args, **kwargs)
         self.__plaza_previa = self.plaza_asignada
 
-    def __unicode__(self):
-        context = {
-            'nombre': self.nombre,
-            'apellido1': self.apellido1,
-            'apellido2': self.apellido2,
-        }
-        return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+    def __str__(self):
+        return "{0.nombre} {0.apellido1} {0.apellido2}".format(self)
 
 class PreferenciasBecario(models.Model):
 
     class Meta:
         # Un becario solo puede indicar su preferencia para una plaza una sola vez
         # Un becario solo puede indicar un orden de prelacion para cada plaza
-        unique_together = (('becario', 'plaza'), ('becario', 'num_orden'))
+        unique_together = (('becario', 'plaza'), ('becario', 'orden'))
+        verbose_name_plural = "preferencias becarios"
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     plaza = models.ForeignKey(Plaza, on_delete=models.CASCADE)
-    num_orden = models.PositiveSmallIntegerField()
+    orden = models.PositiveSmallIntegerField()
 
-    def __unicode__(self):
-        return unicode(self.becario) + '(' + unicode(self.num_orden) + ') - ' + unicode(self.plaza)
+    def __str__(self):
+        return "{0.becario}({0.orden}) - {0.plaza}".format(self)
 
 
 class PlanFormacion(models.Model):
+
+    class Meta:
+        verbose_name = "plan de formación"
+        verbose_name_plural = "planes de formación"
 
     codigo = models.CharField(primary_key=True, max_length=3)
     nombre_curso = models.CharField(max_length=200)
@@ -156,9 +157,9 @@ class PlanFormacion(models.Model):
     fecha_imparticion = models.DateTimeField(null=True, blank=True)
     asistentes = models.ManyToManyField(Becario, through='AsistenciaFormacion')
 
-    def __unicode__(self):
+    def __str__(self):
         if self.fecha_imparticion:
-            return self.nombre_curso + ' - ' + unicode(self.fecha_imparticion.date().strftime('%d/%m/%Y'))
+            return "{0.nombre_curso} - {fecha}".format(self, fecha=self.fecha_imparticion.date().strftime('%d/%m/%Y'))
         return self.nombre_curso
 
 
@@ -166,46 +167,49 @@ class AsistenciaFormacion(models.Model):
 
     class Meta:
         unique_together = (('becario', 'curso'))
+        verbose_name = "asistencia formación"
+        verbose_name_plural = "asistencias formación"
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     curso = models.ForeignKey(PlanFormacion, on_delete=models.CASCADE)
     calificacion = models.DecimalField(
         max_digits=4, decimal_places=2, null=True, blank=True, default=None,
-        validators=[validators.MinValueValidator(0.00), validators.MaxValueValidator(10.00)])
+        validators=[MinValueValidator(0.00), MaxValueValidator(10.00)])
     asistencia = models.BooleanField(default=False)
 
-    def __unicode__(self):
-        return unicode(self.becario) + ' - ' + unicode(self.curso)
+    def __str__(self):
+        return "{0.becario} - {0.curso}".format(self)
 
 class ResponsableAula(models.Model):
+
+    class Meta:
+        verbose_name = "responsable de aula"
+        verbose_name_plural = "responsables de aula"
     nombre = models.CharField(max_length=200,
-                              validators=[validators.RegexValidator(nombre_regex)])
+                              validators=[RegexValidator(_NOMBRE_REGEX)])
     apellido1 = models.CharField(max_length=200)
     apellido2 = models.CharField(max_length=200, blank=True)
-    dni = models.CharField(primary_key=True, validators=[dni_validator],
-                           max_length=8)
+    dni = models.CharField(primary_key=True, validators=[validation.dni_validator],
+                           max_length=9)
     email = models.EmailField(unique=True)
-    telefono = models.PositiveIntegerField(
-        validators=[telefono_validator], blank=True, null=True)
+    telefono = models.CharField(max_length=15,
+        validators=[validation.telefono_validator], blank=True, null=True)
     emplazamiento = models.ForeignKey(Emplazamiento, on_delete=models.CASCADE)
 
-    def __unicode__(self):
-        context = {
-            'nombre': self.nombre,
-            'apellido1': self.apellido1,
-            'apellido2': self.apellido2,
-        }
-        return u'%(nombre)s %(apellido1)s %(apellido2)s' % context
+    def __str__(self):
+        return "{0.nombre} {0.apellido1} {0.apellido2}".format(self)
 
 class CambiosPendientes(models.Model):
 
     class Meta:
         # No puede haber dos cambios pendientes para el mismo becario en la
         # misma plaza para el mismo día.
-        unique_together = (('becario', 'plaza', 'fecha_cambio'))
+        unique_together = (("becario", "plaza", "fecha_cambio"))
+        verbose_name = "cambio pendiente"
+        verbose_name_plural = "cambios pendientes"
     ESTADOS = (
-        ('A', 'Asignado'),
-        ('R', 'Renuncia'),
-        ('T', 'Traslado'),
+        ("A", "Asignado"),
+        ("R", "Renuncia"),
+        ("T", "Traslado"),
     )
     becario = models.ForeignKey(Becario, on_delete=models.CASCADE)
     # La plaza puede ser Null si se solicita una renuncia. Según el unique_together,
@@ -214,50 +218,100 @@ class CambiosPendientes(models.Model):
     fecha_cambio = models.DateField(null=True, blank=True)
     estado_cambio = models.CharField(max_length=1, choices=ESTADOS)
     observaciones = models.TextField(blank=True)
+    requiere_accion_manual = models.BooleanField(default=False)
 
     def clean(self):
-        if hasattr(self, 'becario') and self.estado_cambio == 'A':
+        if hasattr(self, "becario") and self.estado_cambio == "A":
             entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.becario.dni).count()
             if entradas_historial >= 5:
-                raise ValidationError('El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.')
+                raise ValidationError("El becario al que quiere asignar el cambio ya ha recibido beca en 5 convocatorias.")
 
-    def __unicode__(self):
+    def __str__(self):
         if self.fecha_cambio:
-            return unicode(self.becario) + ' - ' + self.get_estado_cambio_display() +\
-            ' - ' + unicode(self.fecha_cambio.strftime('%d/%m/%Y'))
-        return unicode(self.becario) + ' - ' + self.get_estado_cambio_display()
+            return "{0.becario} - {1} - {fecha}".format(self, self.get_estado_cambio_display(), fecha=self.fecha_cambio.strftime("%d/%m/%Y"))
+        return "{0.becario} - {1}".format(self, self.get_estado_cambio_display())
 
 class Convocatoria(models.Model):
-    class Meta:
-        unique_together = (('anyo_inicio', 'anyo_fin'))
-    ANYO_CHOICES = [(r,r) for r in range(2010, datetime.date.today().year + 20)]
 
-    anyo_inicio = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year)
-    anyo_fin = models.IntegerField(choices=ANYO_CHOICES, default=datetime.datetime.now().year + 1)
+    _ANYO_COMIENZO = 2012
+    _ANYO_CHOICES = [(r, r) for r in range(_ANYO_COMIENZO, datetime.date.today().year + 20)]
+
+    class Meta:
+        unique_together = (("anyo_inicio", "anyo_fin"))
+
+    anyo_inicio = models.IntegerField(choices=_ANYO_CHOICES, default=datetime.datetime.now().year)
+    anyo_fin = models.IntegerField(choices=_ANYO_CHOICES, default=datetime.datetime.now().year + 1)
 
     def clean(self):
         dif = self.anyo_fin - self.anyo_inicio
         if dif != 1:
-            raise ValidationError('Convocatoria no válida')
+            raise ValidationError(
+                _("Convocatoria no válida"),
+                params={"convocatoria": self.convocatoria})
 
-    def __unicode__(self):
-        return unicode(self.anyo_inicio) + '/' + unicode(self.anyo_fin)
+    def __str__(self):
+        return "{0.anyo_inicio}/{0.anyo_fin}".format(self)
 
 class HistorialBecarios(models.Model):
 
+    _DNI_MAX_LENGTH = 9
+    _MAX_CONVOCATORIAS = 5
+
     class Meta:
-        unique_together = (('dni_becario', 'convocatoria'))
+        unique_together = (("dni_becario", "convocatoria"))
+        verbose_name_plural = "historiales becarios"
     # No se usa una clave ajena pues al borrar un becario de la tabla Becarios
     # se perdería información en la tabla HistorialBecarios, la cual debe persistir
-    dni_becario = models.CharField(validators=[dni_validator],max_length=8)
+    dni_becario = models.CharField(validators=[validation.dni_validator], max_length=_DNI_MAX_LENGTH)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.PROTECT)
     fecha_asignacion = models.DateField(auto_now_add=True)
     fecha_renuncia = models.DateField(null=True, blank=True)
 
     def clean(self):
         entradas_historial = HistorialBecarios.objects.filter(dni_becario=self.dni_becario).count()
-        if entradas_historial >= 5:
-            raise ValidationError('Este becario ya ha sido asignado en 5 convocatorias.')
+        if entradas_historial >= self._MAX_CONVOCATORIAS:
+            raise ValidationError("Este becario ya ha sido asignado en 5 convocatorias.")
 
-    def __unicode__(self):
-        return unicode(self.dni_becario) + ' - ' + unicode(self.fecha_asignacion.strftime('%d/%m/%Y'))
+    def __str__(self):
+        return "(0.dni_becario) - {fecha}".format(self, fecha=self.fecha_asignacion.strftime("%d/%m/%Y"))
+
+class AdministracionEmplazamiento(models.Model):
+    """
+    Este modelo almacena la relación entre emplazamientos y sus
+    nombres de administración en el CAS y en los alias de correos.
+    """
+
+    _MAX_LENGTH_NOMBRE = 50
+
+    class Meta:
+        verbose_name = "administración emplazamiento"
+        verbose_name_plural = "administración emplazamientos"
+
+    emplazamiento = models.ForeignKey(Emplazamiento)
+    nombre_cas = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+    nombre_correo = models.CharField(max_length=_MAX_LENGTH_NOMBRE)
+
+    def __str__(self):
+        return "{} (Grupo del CAS:{}; Correo:{})".format(self.emplazamiento, self.nombre_cas, self.nombre_correo)
+
+@receiver(post_save, sender=User)
+def populate_data(sender, instance, created, **kwargs):
+    if not created:
+        return
+    user = instance
+    if "alu" not in user.username:
+        return
+
+    correo = user.username + "@ull.edu.es"
+    try:
+        becario = Becario.objects.get(email=correo)
+    except Becario.DoesNotExist as e:
+        return
+    user.email = correo
+    user.first_name = becario.nombre
+    user.last_name = becario.apellido1 + " " + becario.apellido2
+
+    grupo_alumnado = Group.objects.get(name="alumnado")
+    user.groups.add(grupo_alumnado)
+
+    user.save()

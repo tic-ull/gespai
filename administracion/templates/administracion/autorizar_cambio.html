@@ -1,0 +1,45 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+    {% if cambio %}
+        {% if messages %}
+            {% for message in messages %}
+                <div{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <div class="content-section">
+            <h1 class="page-header">Datos del Cambio</h1>
+            <p><strong>Nombre del becario: </strong>{{ cambio.becario }}</p>
+            <p><strong>Estado actual del becario: </strong>{{ cambio.becario.get_estado_display }}</p>
+            <p><strong>Permisos: </strong>{% if cambio.becario.permisos %}Sí{% else %}No{% endif %}</p>
+            <p><strong>Estado del cambio: </strong>{{ cambio.get_estado_cambio_display }}</p>
+            <p><strong>Plaza actual del becario: </strong>{% if cambio.becario.plaza_asignada %}{{ cambio.becario.plaza_asignada }}{% else %}Sin plaza{% endif %}</p>
+            {% if cambio.plaza %}
+            <p><strong>Plaza del cambio: </strong>{{ cambio.plaza }}</p>
+            {% endif %}
+            <p><strong>Fecha del cambio: </strong>{{ cambio.fecha_cambio }}</p>
+            {% if not hecho %}
+            <div class="row">
+                <p>A continuación se muestra la ejecución de los comandos de administración que realizan las actualizaciones en los ficheros correspondientes junto con el estado final de esos ficheros.</p> 
+                <p>Si lo aquí mostrado es correcto, da click en aceptar para dar por terminado el cambio. En caso que hubiera algún error, debe de corregirse manualmente. Por favor corrige el error y vuelve a esta ventana y dale a aceptar o marca el cambio como que requiere correción manual.</p>
+            </div> <!-- .row -->
+            {% endif %}
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row align-center">
+                    <div class="col-xs-6"><input type="submit" class="btn btn-success btn-block" value="Aceptar" name="cambio_final" /></div>
+                    <div class="col-xs-6"><a href="{% url 'cambios:list' %}" class="btn btn-danger btn-block">Requiere cambio manual</a></div>
+                </div> <!-- .row .align-center -->
+            </form>
+            <br>
+            {% if log %}
+            <pre><code>{{ log }}</code></pre>
+            {% endif %}
+        </div> <!-- .content-section -->
+        {% else %}
+        <div class="content-section">
+            <h1 class="page-header">Error</h1>
+            <div class="alert alert-danger">No se encuentra un cambio con la ID especificada.</div>
+        </div> <!-- .content-section -->
+    {% endif %}
+</div> <!-- .container -->
+{% endblock content %}

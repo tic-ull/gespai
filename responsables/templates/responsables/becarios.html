@@ -1,0 +1,28 @@
+{% extends "gespai/base.html" %} {% block content %}
+<div class="container">
+  <div class="content-section">
+    <h1 class="page-header">Becarios para {{ emplazamiento }}</h1>
+    {% if becarios %}
+      {% for becario in becarios %}
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-1 align-center">
+                        <i class="fa fa-user fa-5x"></i>
+                    </div> <!-- col-2 -->
+                    <div class="col-md-11">
+                        <b>Nombre:</b> {{ becario }}<br>
+                        <b>Teléfono:</b> {{ becario.telefono }}<br>
+                        <b>Correo:</b> {{ becario.email }}<br>
+                        <b>Turno:</b> {{ becario.plaza_asignada.get_horario_display }}<br>
+                    </div> <!-- .col-10 -->
+                </div> <!-- .alert .alert-primary .alert-block -->
+            </div> <!-- .alert .alert-primary .alert-block -->
+        </div> <!-- .row--> 
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-danger">No hay becarios asignados a su centro o su cuenta de usuario está mal configurada..</div>
+  {% endif %}
+  </div>
+</div>
+{% endblock content %}
