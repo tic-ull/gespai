@@ -50,6 +50,6 @@ default-character-set = utf8
 
 Para la configuración de apache es necesario haber instalado mod\_wsgi mediante `pip install mod_wsgi` y correr el comando `mod_wsgi-express setup-server` con las opciones que se quiera.
 
-En el fichero `[update_server.sh](update_server.sh)` de la rama preproduction se encuentra el comando con algunas opciones básicas que permiten correrlo sin posterior configuración.
+En el fichero [`update_server.sh`](update_server.sh) de la rama preproduction se encuentra el comando con algunas opciones básicas que permiten correrlo sin posterior configuración.
 
 Dicho comando generará un fichero `apachectl` en el directorio especificado por `--server-root`, que inicia el servidor y puede ser activado con `apachectl start`.
