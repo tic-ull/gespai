@@ -1,6 +1,6 @@
 # Aplicación para la gestión de los becarios de aulas de informática de la Universidad de La Laguna
 
-*[Acceso a la aplicación](djangoapps01.osl.ull.es)*.
+*[Acceso a la aplicación](https://gestion.osl.ull.es)*.
 
 ## Requisitos
 
@@ -21,7 +21,7 @@ Toda la configuración para preproducción se encuentra en la rama [preproductio
 * [MySQL 5.5](https://www.mysql.com/)
 
 ### Configuración de MySQL
-Se debe especificar la dirección de un fichero `.cnf` en el diccionario `DATABASES` del fichero [settings.py](https://github.com/jeplasenciap/gespai/blob/preproduction/gespai/settings.py), que contendrá la configuración de la Base de Datos siguiendo el siguiente formato:
+Se debe especificar la dirección de un fichero `.cnf` en el diccionario `DATABASES` del fichero [settings.py](gespai/settings.py), que contendrá la configuración de la Base de Datos siguiendo el siguiente formato:
 
 ```
 [client]
@@ -50,6 +50,6 @@ default-character-set = utf8
 
 Para la configuración de apache es necesario haber instalado mod\_wsgi mediante `pip install mod_wsgi` y correr el comando `mod_wsgi-express setup-server` con las opciones que se quiera.
 
-En el fichero `[update_server.sh](https://github.com/jeplasenciap/gespai/blob/preproduction/update_server.sh)` se encuentra el comando con algunas opciones básicas que permiten correrlo sin posterior configuración.
+En el fichero `[update_server.sh](update_server.sh)` de la rama preproduction se encuentra el comando con algunas opciones básicas que permiten correrlo sin posterior configuración.
 
 Dicho comando generará un fichero `apachectl` en el directorio especificado por `--server-root`, que inicia el servidor y puede ser activado con `apachectl start`.
